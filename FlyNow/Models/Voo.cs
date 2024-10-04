@@ -6,15 +6,21 @@ using System.Threading.Tasks;
 
 namespace FlyNow.Models
 {
-	internal class Voo : _Base
+	public class Voo : _Base
 	{
-		private Aeroporto Origem;
-		private Aeroporto Destino;
+		public string CodVoo { get; }
+		public Aeroporto Origem { get; }
+		public Aeroporto Destino { get; }
+		public DateTime Data { get; }
+		public CompanhiaAerea CompanhiaOperadora {  get; }
 
-		public Voo(Aeroporto origem, Aeroporto destino)
+		public Voo(string codVoo, Aeroporto origem, Aeroporto destino, DateTime data, CompanhiaAerea companhiaAerea)
 		{
+			CodVoo = codVoo;
 			Origem = origem;
 			Destino = destino;
+			Data = data;
+			CompanhiaOperadora = companhiaAerea;
 		}
 	}
 }

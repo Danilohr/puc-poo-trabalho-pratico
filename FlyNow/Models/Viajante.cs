@@ -8,15 +8,15 @@ namespace FlyNow.Models
 {
 	internal class Viajante : _Base
 	{
-		private string nome;
-		private string cpf;
-		private string rg;
+		private string Nome;
+		private string Cpf;
+		private string Rg;
 
-		public Viajante(string _nome, string _cpf, string _rg)
+		public Viajante(string nome, string cpf, string rg)
 		{
-			this.nome = _nome;
-			this.cpf = _cpf;
-			this.rg = _rg;
+			Nome = nome;
+			Cpf = cpf;
+			Rg = rg;
 		}
 	}
 }

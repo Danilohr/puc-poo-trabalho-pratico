@@ -17,5 +17,21 @@ namespace FlyNow.Models
 			Login = login;
 			Senha = senha;
 		}
+
+		public bool logar()
+		{
+			string login;
+			string senha;
+
+			Console.WriteLine("Informe o seu login");
+			login = Console.ReadLine();
+			Console.WriteLine("Informe a sua senha");
+			senha = Console.ReadLine();
+
+			if (senha != this.Senha || login != this.Login)
+				return false;
+			else
+				return true;
+		}
 	}
 }

@@ -8,15 +8,18 @@ namespace FlyNow.Models
 {
 	public class Funcionario : _Base
 	{
-		private string nome;
-		private string cpf;
-		private string email;
+		private string Nome;
+		private string Cpf;
+		private string Email;
 
 		public Funcionario(string nome, string cpf, string email)
 		{
-			this.nome = nome;
-			this.cpf = cpf;
-			this.email = email;
+			Nome = nome;
+			Cpf = cpf;
+			Email = email;
 		}
+
+
+		
 	}
 }

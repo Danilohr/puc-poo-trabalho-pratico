@@ -6,23 +6,22 @@ using System.Threading.Tasks;
 
 namespace FlyNow.Models
 {
-	internal class Passagem : _Base
+	public abstract class Passagem : _Base
 	{
-		private DateTime Data;
-		private string CodVoo;
-		private Voo Voo;
-		private Bagagem ValorBagagem;
-		private CompanhiaAerea CompanhiaOperadora;
-		private decimal Moeda;
+		internal Voo[] Voos;
+		internal ValorBagagem ValorBagagem;
+		internal CompanhiaAerea CompanhiaOperadora;
+		internal string Moeda;
+		internal Tarifa Tarifa;
 
-		public Passagem(DateTime data, string codVoo, Voo voo, Bagagem valorBagagem, CompanhiaAerea companhiaOperadora, decimal moeda)
+		protected Passagem(Voo[] voos, ValorBagagem valorBagagem, string moeda)
 		{
-			Data = data;
-			CodVoo = codVoo;
-			Voo = voo;
+			Voos = voos;
 			ValorBagagem = valorBagagem;
-			CompanhiaOperadora = companhiaOperadora;
 			Moeda = moeda;
+			CompanhiaOperadora = voos[0].CompanhiaOperadora;
 		}
+
+		public abstract Tarifa getTarifa();
 	}
 }

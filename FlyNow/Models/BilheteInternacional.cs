@@ -8,11 +8,11 @@ namespace FlyNow.Models
 {
 	internal class BilheteInternacional : Bilhete
 	{
-		private string passaporte;
+		private string Passaporte;
 
 		public BilheteInternacional(string _passaporte, Passagem _passagem, Viajante _passageiro) : base(_passagem, _passageiro)
 		{
-			this.passaporte = _passaporte;
+			Passaporte = _passaporte;
 		}
 	}
 }

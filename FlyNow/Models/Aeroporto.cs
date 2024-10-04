@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FlyNow.Models
 {
-	internal class Aeroporto : _Base
+	public class Aeroporto : _Base
 	{
 		private string Nome;
 		private string Cidade;

@@ -9,10 +9,13 @@ namespace FlyNow.Models
 {
 	internal class PassagemBasica : Passagem
 	{
-		private double tarifa { get; set; }
-
-		public PassagemBasica(double tarifa, DateTime data, string codVoo, Voo voo, Bagagem valorBagagem, CompanhiaAerea companhiaOperadora, decimal moeda) : base(data, codVoo, voo, valorBagagem, companhiaOperadora, moeda)
+		public PassagemBasica(Voo[] voos, ValorBagagem valorBagagem, string moeda) : base(voos, valorBagagem, moeda)
 		{
+		}
+
+		public override Tarifa getTarifa()
+		{
+			return CompanhiaOperadora.GetTarifa(CompanhiaAerea.TipoVoo.Basica);
 		}
 	}
 }

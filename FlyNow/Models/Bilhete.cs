@@ -8,13 +8,13 @@ namespace FlyNow.Models
 {
 	internal class Bilhete : _Base
 	{
-		private Passagem passagem;
-		private Viajante passageiro;
+		private Passagem Passagem;
+		private Viajante Passageiro;
 
-		public Bilhete(Passagem _passagem, Viajante _passageiro)
+		public Bilhete(Passagem passagem, Viajante passageiro)
 		{
-			this.passagem = _passagem;
-			this.passageiro = _passageiro;
+			Passagem = passagem;
+			Passageiro = passageiro;
 		}
 	}
 }

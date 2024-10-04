@@ -8,13 +8,13 @@ namespace FlyNow.Models
 {
 	internal class Agencia : _Base
 	{
-		private string nome;
-		private double taxaAgencia;
+		private string Nome;
+		private double TaxaAgencia;
 
 		public Agencia(string nome, double taxaAgencia)
 		{
-			this.nome = nome;
-			this.taxaAgencia = taxaAgencia;
+			Nome = nome;
+			TaxaAgencia = taxaAgencia;
 		}
 	}
 }
