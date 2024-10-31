@@ -4,7 +4,7 @@ namespace FlyNow.Infrastructure
 {
 	public class ProgramDbContext : DbContext
 	{
-		DbContextOptions<ProgramDbContext> options;
+		private DbContextOptions<ProgramDbContext> options;
 
 		public ProgramDbContext(DbContextOptions<ProgramDbContext> options) : base(options) { }
 

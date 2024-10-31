@@ -1,25 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using FlyNow.Infrastructure;
+using FlyNow.Data;
 using System.Configuration;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-ConfigureServices(builder);
+builder.Services.AddControllers();
 
-void ConfigureServices(WebApplicationBuilder builder)
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var con = builder.Configuration.GetConnectionString("ConexaoMySql");
+builder.Services.AddDbContext<FlyNowContext>(options =>
 {
-	builder.Services.AddControllers();
-
-	builder.Services.AddEndpointsApiExplorer();
-	builder.Services.AddSwaggerGen();
-
-	var con = builder.Configuration.GetConnectionString("ConexaoMySql");
-	builder.Services.AddDbContext<ProgramDbContext>( options => {
-		options.UseMySql(con, ServerVersion.AutoDetect(con)); 
-		}
-	);
-}
+	options.UseMySql(con, ServerVersion.AutoDetect(con));
+});
 
 var app = builder.Build();
 
@@ -30,9 +25,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

@@ -4,3 +4,7 @@ GET {{WebApplication1_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+
+GET {{WebApplication1_HostAddress}}/Voo/
+Accept: application/json

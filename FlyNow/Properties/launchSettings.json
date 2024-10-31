@@ -1,6 +1,6 @@
 ﻿{
   "ConnectionStrings": {
-    "FlyNowDB": "Server=(localhost)\\sistema_aeroporto;Database=sistema_aeroporto;Trusted_Connection=True;"
+    "Default": "Server=127.0.0.1;port=3306;Database=sistema_aeroporto;Uid=root;Pwd=Felicidade281003!;"
   },
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "iisSettings": {
