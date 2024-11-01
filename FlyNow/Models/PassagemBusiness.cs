@@ -12,9 +12,9 @@ namespace FlyNow.Models
 		{
 		}
 
-		public override Tarifa getTarifa()
+		public override Tarifa getTarifa(Agencia a)
 		{
-			return CompanhiaOperadora.GetTarifa(CompanhiaAerea.TipoVoo.Business);
+			return CompanhiaOperadora.GetTarifa(CompanhiaAerea.TipoVoo.Business, a);
 		}
 	}
 }

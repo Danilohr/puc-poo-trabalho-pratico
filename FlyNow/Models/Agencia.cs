@@ -6,15 +6,21 @@ using System.Threading.Tasks;
 
 namespace FlyNow.Models
 {
-	internal class Agencia : _Base
+	public class Agencia : _Base
 	{
 		private string Nome;
-		private double TaxaAgencia;
+		public double TaxaAgencia { get; }
+		private List<CompanhiaAerea> ListComanhiaAerea { get; } = new List<CompanhiaAerea>();
 
 		public Agencia(string nome, double taxaAgencia)
 		{
 			Nome = nome;
 			TaxaAgencia = taxaAgencia;
+		}
+
+		public void adicionarComanhiaAerea(CompanhiaAerea a)
+		{
+			ListComanhiaAerea.Add(a);
 		}
 	}
 }

@@ -1,11 +1,13 @@
-﻿using System;
+﻿using FlyNow.Models;
+using System;
 
 namespace FlyNow
 {
 	class Program
 	{
-		public static void Main(string[] args) { 
-			Console.WriteLine("Hello");
+		public static void Main(string[] args) 
+		{
+		
 		}
 
 	}

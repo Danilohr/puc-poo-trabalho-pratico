@@ -35,15 +35,25 @@ namespace FlyNow.Models
 			return new ValorBagagem(100, 0);
 		}
 
-		internal Tarifa GetTarifa(TipoVoo tipoVoo)
+		internal Tarifa GetTarifa(TipoVoo tipoVoo, Agencia a)
 		{
+			double valorPassagem = 0;
+
 			switch (tipoVoo)
 			{// vai puxar do banco
-				case TipoVoo.Basica: return new Tarifa(1000);
-				case TipoVoo.Business: return new Tarifa(3000);
-				case TipoVoo.Premium: return new Tarifa(6000);
-				default: return new Tarifa(0);
+				case TipoVoo.Basica: valorPassagem = 1000;
+					break;
+				case TipoVoo.Business: valorPassagem = 3000;
+					break;
+				case TipoVoo.Premium: valorPassagem = 6000;
+					break;
+				default: throw new Exception("Sem valor na tarifa");
 			}
+
+			valorPassagem += a.TaxaAgencia;
+
+			Tarifa t = new Tarifa(valorPassagem);
+			return t;
 		}
 
 		public Passagem GerarPassagem(Voo[] voos, TipoVoo tipoVoo)
@@ -73,6 +83,12 @@ namespace FlyNow.Models
 
 				default: throw new Exception("Não foi possível gerar passagem!");
 			}
+		}
+		public void cancelarVoo(Voo voo)
+		{
+			voo.Status = false;
+
+			//para cancelar as passagens será feita uma busca no banco para as passagens que possuem esse voo
 		}
 	}
 }

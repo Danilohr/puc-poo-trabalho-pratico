@@ -22,6 +22,6 @@ namespace FlyNow.Models
 			CompanhiaOperadora = voos[0].CompanhiaOperadora;
 		}
 
-		public abstract Tarifa getTarifa();
+		public abstract Tarifa getTarifa(Agencia a);
 	}
 }
