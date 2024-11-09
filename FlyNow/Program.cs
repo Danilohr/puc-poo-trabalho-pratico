@@ -10,7 +10,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var con = builder.Configuration.GetConnectionString("ConexaoMySql");
+var con = builder.Configuration.GetConnectionString("Default");
 builder.Services.AddDbContext<FlyNowContext>(options =>
 {
 	options.UseMySql(con, ServerVersion.AutoDetect(con));
