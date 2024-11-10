@@ -37,13 +37,5 @@ namespace FlyNow.Controllers
 
 			return Ok();
 		}
-
-		[HttpPut]
-		public IActionResult TornarPassageiroVip(CompanhiaAerea companhia, Usuario usuario)
-		{
-			service.TornarPassageiroVip(companhia, usuario);
-
-			return Ok();
-		}
 	}
 }

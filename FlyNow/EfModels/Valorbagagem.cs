@@ -11,7 +11,7 @@ public partial class Valorbagagem
 
     public double? ValorBagagemAdicional { get; set; }
 
-    public double CompanhiaaereaCod { get; set; }
+    public int CompanhiaaereaCod { get; set; }
 
     public virtual CompanhiaAerea CompanhiaaereaCodNavigation { get; set; } = null!;
 

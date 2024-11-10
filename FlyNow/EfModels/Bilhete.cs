@@ -5,11 +5,15 @@ namespace FlyNow.EfModels;
 
 public partial class Bilhete
 {
-    public int IdBilhete { get; set; }
+    public int PassagemIdPassagem { get; set; }
+
+    public int PassageiroIdPassageiro { get; set; }
 
     public sbyte? BilheteInternacional { get; set; }
 
-    public virtual ICollection<Passagem> Passagems { get; set; } = new List<Passagem>();
+    public string? StatusPassageiro { get; set; }
 
-    public virtual Viajante? Viajante { get; set; }
+    public virtual Passageiro PassageiroIdPassageiroNavigation { get; set; } = null!;
+
+    public virtual Passagem PassagemIdPassagemNavigation { get; set; } = null!;
 }

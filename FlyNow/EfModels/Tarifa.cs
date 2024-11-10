@@ -9,11 +9,9 @@ public partial class Tarifa
 
     public double? Valor { get; set; }
 
-    public double CompanhiaaereaCod { get; set; }
-
-    public int PassagemIdPassagem { get; set; }
+    public int CompanhiaaereaCod { get; set; }
 
     public virtual CompanhiaAerea CompanhiaaereaCodNavigation { get; set; } = null!;
 
-    public virtual Passagem PassagemIdPassagemNavigation { get; set; } = null!;
+    public virtual ICollection<Passagem> Passagems { get; set; } = new List<Passagem>();
 }

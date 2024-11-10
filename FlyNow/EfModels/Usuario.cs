@@ -15,5 +15,5 @@ public partial class Usuario
 
     public virtual Funcionario FuncionarioIdFuncionarioNavigation { get; set; } = null!;
 
-    public virtual ICollection<Viajante> Viajantes { get; set; } = new List<Viajante>();
+    public virtual ICollection<Passageiro> Passageiros { get; set; } = new List<Passageiro>();
 }

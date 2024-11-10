@@ -17,17 +17,23 @@ public partial class FlyNowContext : DbContext
 	{
 	}
 
+	public virtual DbSet<Aeronave> Aeronaves { get; set; }
+
 	public virtual DbSet<Aeroporto> Aeroportos { get; set; }
 
-	public virtual DbSet<Agencia> Agencia { get; set; }
+	public virtual DbSet<Agencium> Agencia { get; set; }
+
+	public virtual DbSet<Assento> Assentos { get; set; }
 
 	public virtual DbSet<Bilhete> Bilhetes { get; set; }
 
 	public virtual DbSet<CompanhiaAerea> Companhiaaereas { get; set; }
 
-	public virtual DbSet<CompanhiaAereaHasAgencia> CompanhiaaereaHasAgencia { get; set; }
+	public virtual DbSet<CompanhiaaereaHasAgencium> CompanhiaaereaHasAgencia { get; set; }
 
 	public virtual DbSet<Funcionario> Funcionarios { get; set; }
+
+	public virtual DbSet<Passageiro> Passageiros { get; set; }
 
 	public virtual DbSet<Passagem> Passagems { get; set; }
 
@@ -37,9 +43,11 @@ public partial class FlyNowContext : DbContext
 
 	public virtual DbSet<Valorbagagem> Valorbagagems { get; set; }
 
-	public virtual DbSet<Viajante> Viajantes { get; set; }
-
 	public virtual DbSet<Voo> Voos { get; set; }
+
+	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+			=> optionsBuilder.UseMySql("server=localhost;port=3306;database=sistema_aeroporto;uid=root;pwd=Felicidade281003!", ServerVersion.Parse("8.0.28-mysql"));
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
@@ -47,15 +55,28 @@ public partial class FlyNowContext : DbContext
 				.UseCollation("utf8mb4_0900_ai_ci")
 				.HasCharSet("utf8mb4");
 
+		modelBuilder.Entity<Aeronave>(entity =>
+		{
+			entity.HasKey(e => e.IdAeronave).HasName("PRIMARY");
+
+			entity.ToTable("aeronave");
+
+			entity.HasIndex(e => e.CapacidadeBagagens, "capacidadeBagagens_UNIQUE").IsUnique();
+
+			entity.HasIndex(e => e.CapacidadePassageiros, "capacidadePassageiros_UNIQUE").IsUnique();
+
+			entity.Property(e => e.IdAeronave).HasColumnName("id_aeronave");
+			entity.Property(e => e.CapacidadeBagagens).HasColumnName("capacidadeBagagens");
+			entity.Property(e => e.CapacidadePassageiros).HasColumnName("capacidadePassageiros");
+		});
+
 		modelBuilder.Entity<Aeroporto>(entity =>
 		{
 			entity.HasKey(e => e.IdAeroporto).HasName("PRIMARY");
 
 			entity.ToTable("aeroporto");
 
-			entity.Property(e => e.IdAeroporto)
-							.ValueGeneratedNever()
-							.HasColumnName("id_aeroporto");
+			entity.Property(e => e.IdAeroporto).HasColumnName("id_aeroporto");
 			entity.Property(e => e.Cidade)
 							.HasMaxLength(100)
 							.HasColumnName("cidade");
@@ -68,31 +89,9 @@ public partial class FlyNowContext : DbContext
 			entity.Property(e => e.Uf)
 							.HasMaxLength(2)
 							.HasColumnName("uf");
-
-			entity.HasMany(d => d.VooIdVoos).WithMany(p => p.AeroportoIdAeroportos)
-							.UsingEntity<Dictionary<string, object>>(
-									"AeroportoHasVoo",
-									r => r.HasOne<Voo>().WithMany()
-											.HasForeignKey("VooIdVoo")
-											.OnDelete(DeleteBehavior.ClientSetNull)
-											.HasConstraintName("fk_aeroporto_has_voo_voo1"),
-									l => l.HasOne<Aeroporto>().WithMany()
-											.HasForeignKey("AeroportoIdAeroporto")
-											.HasConstraintName("fk_aeroporto_has_voo_aeroporto1"),
-									j =>
-									{
-									j.HasKey("AeroportoIdAeroporto", "VooIdVoo")
-													.HasName("PRIMARY")
-													.HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
-									j.ToTable("aeroporto_has_voo");
-									j.HasIndex(new[] { "AeroportoIdAeroporto" }, "fk_aeroporto_has_voo_aeroporto1_idx");
-									j.HasIndex(new[] { "VooIdVoo" }, "fk_aeroporto_has_voo_voo1_idx");
-									j.IndexerProperty<int>("AeroportoIdAeroporto").HasColumnName("aeroporto_id_aeroporto");
-									j.IndexerProperty<int>("VooIdVoo").HasColumnName("voo_id_voo");
-								});
 		});
 
-		modelBuilder.Entity<Agencia>(entity =>
+		modelBuilder.Entity<Agencium>(entity =>
 		{
 			entity.HasKey(e => new { e.IdAgencia, e.FuncionarioIdFuncionario })
 							.HasName("PRIMARY")
@@ -115,13 +114,62 @@ public partial class FlyNowContext : DbContext
 							.HasConstraintName("fk_agencia_funcionario1");
 		});
 
+		modelBuilder.Entity<Assento>(entity =>
+		{
+			entity.HasKey(e => new { e.IdAssento, e.AeronaveIdAeronave })
+							.HasName("PRIMARY")
+							.HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+
+			entity.ToTable("assento");
+
+			entity.HasIndex(e => e.AeronaveIdAeronave, "fk_assento_aeronave1_idx");
+
+			entity.Property(e => e.IdAssento)
+							.ValueGeneratedOnAdd()
+							.HasColumnName("id_assento");
+			entity.Property(e => e.AeronaveIdAeronave).HasColumnName("aeronave_id_aeronave");
+			entity.Property(e => e.LetraAssento)
+							.HasMaxLength(1)
+							.IsFixedLength()
+							.HasColumnName("letraAssento");
+			entity.Property(e => e.NumeroFileira).HasColumnName("numeroFileira");
+			entity.Property(e => e.Ocupado)
+							.HasDefaultValueSql("'0'")
+							.HasColumnName("ocupado");
+
+			entity.HasOne(d => d.AeronaveIdAeronaveNavigation).WithMany(p => p.Assentos)
+							.HasForeignKey(d => d.AeronaveIdAeronave)
+							.OnDelete(DeleteBehavior.ClientSetNull)
+							.HasConstraintName("fk_assento_aeronave1");
+		});
+
 		modelBuilder.Entity<Bilhete>(entity =>
 		{
-			entity.HasKey(e => e.IdBilhete).HasName("PRIMARY");
+			entity.HasKey(e => new { e.PassagemIdPassagem, e.PassageiroIdPassageiro })
+							.HasName("PRIMARY")
+							.HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
 
 			entity.ToTable("bilhete");
 
-			entity.Property(e => e.IdBilhete).HasColumnName("idBilhete");
+			entity.HasIndex(e => e.PassageiroIdPassageiro, "fk_bilhete_passageiro1_idx");
+
+			entity.HasIndex(e => e.PassagemIdPassagem, "fk_bilhete_passagem1_idx");
+
+			entity.Property(e => e.PassagemIdPassagem).HasColumnName("passagem_idPassagem");
+			entity.Property(e => e.PassageiroIdPassageiro).HasColumnName("passageiro_idPassageiro");
+			entity.Property(e => e.StatusPassageiro)
+							.HasColumnType("enum('Passagem adquirida','Passagem cancelada','Check-in realizado','Embarque realizado','NO SHOW')")
+							.HasColumnName("statusPassageiro");
+
+			entity.HasOne(d => d.PassageiroIdPassageiroNavigation).WithMany(p => p.Bilhetes)
+							.HasForeignKey(d => d.PassageiroIdPassageiro)
+							.OnDelete(DeleteBehavior.ClientSetNull)
+							.HasConstraintName("fk_bilhete_passageiro1");
+
+			entity.HasOne(d => d.PassagemIdPassagemNavigation).WithMany(p => p.Bilhetes)
+							.HasForeignKey(d => d.PassagemIdPassagem)
+							.OnDelete(DeleteBehavior.ClientSetNull)
+							.HasConstraintName("fk_bilhete_passagem1");
 		});
 
 		modelBuilder.Entity<CompanhiaAerea>(entity =>
@@ -141,35 +189,27 @@ public partial class FlyNowContext : DbContext
 							.HasMaxLength(150)
 							.HasColumnName("razaoSocial");
 			entity.Property(e => e.TaxaRemuneracao).HasColumnName("taxaRemuneracao");
-			entity.Property(e => e.TipoVoo)
-							.HasDefaultValueSql("'Domestico'")
-							.HasColumnType("enum('Domestico','Internacional')")
-							.HasColumnName("tipoVoo");
 		});
 
-		modelBuilder.Entity<CompanhiaAereaHasAgencia>(entity =>
+		modelBuilder.Entity<CompanhiaaereaHasAgencium>(entity =>
 		{
-			entity.HasKey(e => e.CompanhiaaereaCod).HasName("PRIMARY");
+			entity.HasKey(e => new { e.AgenciaIdAgencia, e.CompanhiaaereaCod })
+							.HasName("PRIMARY")
+							.HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
 
 			entity.ToTable("companhiaaerea_has_agencia");
 
-			entity.HasIndex(e => new { e.AgenciaIdAgencia, e.AgenciaFuncionarioIdFuncionario }, "fk_companhiaaerea_has_agencia_agencia1_idx");
+			entity.HasIndex(e => e.AgenciaIdAgencia, "fk_companhiaaerea_has_agencia_agencia1_idx");
 
 			entity.HasIndex(e => e.CompanhiaaereaCod, "fk_companhiaaerea_has_agencia_companhiaaerea1_idx");
 
-			entity.Property(e => e.CompanhiaaereaCod).HasColumnName("companhiaaerea_cod");
-			entity.Property(e => e.AgenciaFuncionarioIdFuncionario).HasColumnName("agencia_funcionario_id-funcionario");
 			entity.Property(e => e.AgenciaIdAgencia).HasColumnName("agencia_id_agencia");
+			entity.Property(e => e.CompanhiaaereaCod).HasColumnName("companhiaaerea_cod");
 
-			entity.HasOne(d => d.CompanhiaaereaCodNavigation).WithOne(p => p.CompanhiaaereaHasAgencium)
-							.HasForeignKey<CompanhiaAereaHasAgencia>(d => d.CompanhiaaereaCod)
+			entity.HasOne(d => d.CompanhiaaereaCodNavigation).WithMany(p => p.CompanhiaaereaHasAgencia)
+							.HasForeignKey(d => d.CompanhiaaereaCod)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_companhiaaerea_has_agencia_companhiaaerea1");
-
-			entity.HasOne(d => d.Agencium).WithMany(p => p.CompanhiaaereaHasAgencia)
-							.HasForeignKey(d => new { d.AgenciaIdAgencia, d.AgenciaFuncionarioIdFuncionario })
-							.OnDelete(DeleteBehavior.ClientSetNull)
-							.HasConstraintName("fk_companhiaaerea_has_agencia_agencia1");
 		});
 
 		modelBuilder.Entity<Funcionario>(entity =>
@@ -178,11 +218,9 @@ public partial class FlyNowContext : DbContext
 
 			entity.ToTable("funcionario");
 
-			entity.HasIndex(e => e.Cpf, "unique_cpf").IsUnique();
-
 			entity.Property(e => e.IdFuncionario)
 							.ValueGeneratedNever()
-							.HasColumnName("id-funcionario");
+							.HasColumnName("idFuncionario");
 			entity.Property(e => e.Cpf)
 							.HasMaxLength(11)
 							.HasColumnName("cpf");
@@ -194,33 +232,70 @@ public partial class FlyNowContext : DbContext
 							.HasColumnName("nome");
 		});
 
+		modelBuilder.Entity<Passageiro>(entity =>
+		{
+			entity.HasKey(e => e.IdPassageiro).HasName("PRIMARY");
+
+			entity.ToTable("passageiro");
+
+			entity.HasIndex(e => e.UsuarioIdUsuario, "fk_viajante_usuario1_idx");
+
+			entity.HasIndex(e => e.Rg, "rg_UNIQUE").IsUnique();
+
+			entity.Property(e => e.IdPassageiro).HasColumnName("idPassageiro");
+			entity.Property(e => e.Cpf)
+							.HasMaxLength(11)
+							.HasColumnName("cpf");
+			entity.Property(e => e.Nome)
+							.HasMaxLength(100)
+							.HasColumnName("nome");
+			entity.Property(e => e.Rg)
+							.HasMaxLength(20)
+							.HasColumnName("rg");
+			entity.Property(e => e.UsuarioIdUsuario).HasColumnName("usuario_id_usuario");
+
+			entity.HasOne(d => d.UsuarioIdUsuarioNavigation).WithMany(p => p.Passageiros)
+							.HasForeignKey(d => d.UsuarioIdUsuario)
+							.OnDelete(DeleteBehavior.ClientSetNull)
+							.HasConstraintName("fk_viajante_usuario1");
+		});
+
 		modelBuilder.Entity<Passagem>(entity =>
 		{
 			entity.HasKey(e => e.IdPassagem).HasName("PRIMARY");
 
 			entity.ToTable("passagem");
 
-			entity.HasIndex(e => e.BilheteIdBilhete, "fk_passagem_bilhete1_idx");
+			entity.HasIndex(e => e.TarifaIdTarifa, "fk_passagem_tarifa1_idx");
 
 			entity.HasIndex(e => e.ValorbagagemId, "fk_passagem_valorbagagem1_idx");
 
+			entity.HasIndex(e => e.IdVoo1, "fk_passagem_voo1_idx").IsUnique();
+
+			entity.HasIndex(e => e.IdVoo2, "fk_passagem_voo2_idx");
+
 			entity.Property(e => e.IdPassagem).HasColumnName("idPassagem");
-			entity.Property(e => e.BilheteIdBilhete).HasColumnName("bilhete_idBilhete");
-			entity.Property(e => e.CompanhiaAerea)
-							.HasMaxLength(45)
-							.HasColumnName("companhia_aerea");
+			entity.Property(e => e.IdVoo1).HasColumnName("idVoo1");
+			entity.Property(e => e.IdVoo2).HasColumnName("idVoo2");
 			entity.Property(e => e.Moeda)
 							.HasMaxLength(3)
 							.HasColumnName("moeda");
-			entity.Property(e => e.Tarifa)
-							.HasMaxLength(45)
-							.HasColumnName("tarifa");
+			entity.Property(e => e.TarifaIdTarifa).HasColumnName("tarifa_idTarifa");
 			entity.Property(e => e.ValorbagagemId).HasColumnName("valorbagagem_id");
 
-			entity.HasOne(d => d.BilheteIdBilheteNavigation).WithMany(p => p.Passagems)
-							.HasForeignKey(d => d.BilheteIdBilhete)
+			entity.HasOne(d => d.IdVoo1Navigation).WithOne(p => p.PassagemIdVoo1Navigation)
+							.HasForeignKey<Passagem>(d => d.IdVoo1)
 							.OnDelete(DeleteBehavior.ClientSetNull)
-							.HasConstraintName("fk_passagem_bilhete1");
+							.HasConstraintName("fk_passagem_voo1");
+
+			entity.HasOne(d => d.IdVoo2Navigation).WithMany(p => p.PassagemIdVoo2Navigations)
+							.HasForeignKey(d => d.IdVoo2)
+							.HasConstraintName("fk_passagem_voo2");
+
+			entity.HasOne(d => d.TarifaIdTarifaNavigation).WithMany(p => p.Passagems)
+							.HasForeignKey(d => d.TarifaIdTarifa)
+							.OnDelete(DeleteBehavior.ClientSetNull)
+							.HasConstraintName("fk_passagem_tarifa1");
 
 			entity.HasOne(d => d.Valorbagagem).WithMany(p => p.Passagems)
 							.HasForeignKey(d => d.ValorbagagemId)
@@ -230,20 +305,13 @@ public partial class FlyNowContext : DbContext
 
 		modelBuilder.Entity<Tarifa>(entity =>
 		{
-			entity.HasKey(e => new { e.IdTarifa, e.PassagemIdPassagem })
-							.HasName("PRIMARY")
-							.HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+			entity.HasKey(e => e.IdTarifa).HasName("PRIMARY");
 
 			entity.ToTable("tarifa");
 
 			entity.HasIndex(e => e.CompanhiaaereaCod, "fk_tarifa_companhiaaerea1_idx");
 
-			entity.HasIndex(e => e.PassagemIdPassagem, "fk_tarifa_passagem1_idx");
-
-			entity.Property(e => e.IdTarifa)
-							.ValueGeneratedOnAdd()
-							.HasColumnName("idTarifa");
-			entity.Property(e => e.PassagemIdPassagem).HasColumnName("passagem_idPassagem");
+			entity.Property(e => e.IdTarifa).HasColumnName("idTarifa");
 			entity.Property(e => e.CompanhiaaereaCod).HasColumnName("companhiaaerea_cod");
 			entity.Property(e => e.Valor).HasColumnName("valor");
 
@@ -251,11 +319,6 @@ public partial class FlyNowContext : DbContext
 							.HasForeignKey(d => d.CompanhiaaereaCod)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_tarifa_companhiaaerea1");
-
-			entity.HasOne(d => d.PassagemIdPassagemNavigation).WithMany(p => p.Tarifas)
-							.HasForeignKey(d => d.PassagemIdPassagem)
-							.OnDelete(DeleteBehavior.ClientSetNull)
-							.HasConstraintName("fk_tarifa_passagem1");
 		});
 
 		modelBuilder.Entity<Usuario>(entity =>
@@ -266,12 +329,10 @@ public partial class FlyNowContext : DbContext
 
 			entity.HasIndex(e => e.FuncionarioIdFuncionario, "fk_usuario_funcionario1_idx");
 
-			entity.HasIndex(e => e.Login, "unique_login").IsUnique();
-
 			entity.Property(e => e.IdUsuario)
 							.ValueGeneratedNever()
 							.HasColumnName("id_usuario");
-			entity.Property(e => e.FuncionarioIdFuncionario).HasColumnName("funcionario_id-funcionario");
+			entity.Property(e => e.FuncionarioIdFuncionario).HasColumnName("funcionario_idFuncionario");
 			entity.Property(e => e.Login)
 							.HasMaxLength(50)
 							.HasColumnName("login");
@@ -291,53 +352,17 @@ public partial class FlyNowContext : DbContext
 
 			entity.ToTable("valorbagagem");
 
-			entity.HasIndex(e => e.CompanhiaaereaCod, "fk_valorbagagem_companhiaaerea1_idx");
+			entity.HasIndex(e => e.CompanhiaaereaCod, "companhiaaerea_cod_UNIQUE").IsUnique();
 
 			entity.Property(e => e.Id).HasColumnName("id");
 			entity.Property(e => e.CompanhiaaereaCod).HasColumnName("companhiaaerea_cod");
 			entity.Property(e => e.ValorBagagemAdicional).HasColumnName("valorBagagemAdicional");
 			entity.Property(e => e.ValorPrimeiraBagagem).HasColumnName("valorPrimeiraBagagem");
 
-			entity.HasOne(d => d.CompanhiaaereaCodNavigation).WithMany(p => p.Valorbagagems)
-							.HasForeignKey(d => d.CompanhiaaereaCod)
+			entity.HasOne(d => d.CompanhiaaereaCodNavigation).WithOne(p => p.Valorbagagem)
+							.HasForeignKey<Valorbagagem>(d => d.CompanhiaaereaCod)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_valorbagagem_companhiaaerea1");
-		});
-
-		modelBuilder.Entity<Viajante>(entity =>
-		{
-			entity.HasKey(e => e.IdViajante).HasName("PRIMARY");
-
-			entity.ToTable("viajante");
-
-			entity.HasIndex(e => e.BilheteIdBilhete, "bilhete_idBilhete_UNIQUE").IsUnique();
-
-			entity.HasIndex(e => e.UsuarioIdUsuario, "fk_viajante_usuario1_idx");
-
-			entity.HasIndex(e => e.Rg, "rg_UNIQUE").IsUnique();
-
-			entity.Property(e => e.IdViajante).HasColumnName("idViajante");
-			entity.Property(e => e.BilheteIdBilhete).HasColumnName("bilhete_idBilhete");
-			entity.Property(e => e.Cpf)
-							.HasMaxLength(11)
-							.HasColumnName("cpf");
-			entity.Property(e => e.Nome)
-							.HasMaxLength(100)
-							.HasColumnName("nome");
-			entity.Property(e => e.Rg)
-							.HasMaxLength(20)
-							.HasColumnName("rg");
-			entity.Property(e => e.UsuarioIdUsuario).HasColumnName("usuario_id_usuario");
-
-			entity.HasOne(d => d.BilheteIdBilheteNavigation).WithOne(p => p.Viajante)
-							.HasForeignKey<Viajante>(d => d.BilheteIdBilhete)
-							.OnDelete(DeleteBehavior.ClientSetNull)
-							.HasConstraintName("fk_viajante_bilhete1");
-
-			entity.HasOne(d => d.UsuarioIdUsuarioNavigation).WithMany(p => p.Viajantes)
-							.HasForeignKey(d => d.UsuarioIdUsuario)
-							.OnDelete(DeleteBehavior.ClientSetNull)
-							.HasConstraintName("fk_viajante_usuario1");
 		});
 
 		modelBuilder.Entity<Voo>(entity =>
@@ -346,11 +371,16 @@ public partial class FlyNowContext : DbContext
 
 			entity.ToTable("voo");
 
+			entity.HasIndex(e => e.AeronaveIdAeronave, "fk_voo_aeronave1_idx");
+
+			entity.HasIndex(e => e.IdAeroportoOrigem, "fk_voo_aeroporto1_idx");
+
+			entity.HasIndex(e => e.IdAeroportoDestino, "fk_voo_aeroporto2_idx");
+
 			entity.HasIndex(e => e.CompanhiaaereaCod, "fk_voo_companhiaaerea1_idx");
 
-			entity.Property(e => e.IdVoo)
-							.ValueGeneratedNever()
-							.HasColumnName("id_voo");
+			entity.Property(e => e.IdVoo).HasColumnName("id_voo");
+			entity.Property(e => e.AeronaveIdAeronave).HasColumnName("aeronave_id_aeronave");
 			entity.Property(e => e.CodVoo)
 							.HasMaxLength(10)
 							.HasColumnName("codVoo");
@@ -358,40 +388,34 @@ public partial class FlyNowContext : DbContext
 			entity.Property(e => e.Data)
 							.HasColumnType("datetime")
 							.HasColumnName("data");
-			entity.Property(e => e.Destino)
-							.HasMaxLength(45)
-							.HasColumnName("destino");
-			entity.Property(e => e.Origem)
-							.HasMaxLength(45)
-							.HasColumnName("origem");
+			entity.Property(e => e.Duracao)
+							.HasColumnType("time")
+							.HasColumnName("duracao");
+			entity.Property(e => e.EhInternacional)
+							.HasDefaultValueSql("'0'")
+							.HasColumnName("ehInternacional");
+			entity.Property(e => e.IdAeroportoDestino).HasColumnName("idAeroportoDestino");
+			entity.Property(e => e.IdAeroportoOrigem).HasColumnName("idAeroportoOrigem");
+
+			entity.HasOne(d => d.AeronaveIdAeronaveNavigation).WithMany(p => p.Voos)
+							.HasForeignKey(d => d.AeronaveIdAeronave)
+							.OnDelete(DeleteBehavior.ClientSetNull)
+							.HasConstraintName("fk_voo_aeronave1");
 
 			entity.HasOne(d => d.CompanhiaaereaCodNavigation).WithMany(p => p.Voos)
 							.HasForeignKey(d => d.CompanhiaaereaCod)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_voo_companhiaaerea1");
 
-			entity.HasMany(d => d.PassagemIdPassagems).WithMany(p => p.VooIdVoos)
-							.UsingEntity<Dictionary<string, object>>(
-									"VooHasPassagem",
-									r => r.HasOne<Passagem>().WithMany()
-											.HasForeignKey("PassagemIdPassagem")
-											.OnDelete(DeleteBehavior.ClientSetNull)
-											.HasConstraintName("fk_voo_has_passagem_passagem1"),
-									l => l.HasOne<Voo>().WithMany()
-											.HasForeignKey("VooIdVoo")
-											.OnDelete(DeleteBehavior.ClientSetNull)
-											.HasConstraintName("fk_voo_has_passagem_voo1"),
-									j =>
-									{
-									j.HasKey("VooIdVoo", "PassagemIdPassagem")
-													.HasName("PRIMARY")
-													.HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
-									j.ToTable("voo_has_passagem");
-									j.HasIndex(new[] { "PassagemIdPassagem" }, "fk_voo_has_passagem_passagem1_idx");
-									j.HasIndex(new[] { "VooIdVoo" }, "fk_voo_has_passagem_voo1_idx");
-									j.IndexerProperty<int>("VooIdVoo").HasColumnName("voo_id_voo");
-									j.IndexerProperty<int>("PassagemIdPassagem").HasColumnName("passagem_idPassagem");
-								});
+			entity.HasOne(d => d.IdAeroportoDestinoNavigation).WithMany(p => p.VooIdAeroportoDestinoNavigations)
+							.HasForeignKey(d => d.IdAeroportoDestino)
+							.OnDelete(DeleteBehavior.ClientSetNull)
+							.HasConstraintName("fk_voo_aeroporto2");
+
+			entity.HasOne(d => d.IdAeroportoOrigemNavigation).WithMany(p => p.VooIdAeroportoOrigemNavigations)
+							.HasForeignKey(d => d.IdAeroportoOrigem)
+							.OnDelete(DeleteBehavior.ClientSetNull)
+							.HasConstraintName("fk_voo_aeroporto1");
 		});
 
 		OnModelCreatingPartial(modelBuilder);

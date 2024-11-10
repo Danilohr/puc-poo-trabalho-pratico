@@ -9,19 +9,21 @@ public partial class Passagem
 
     public string? Moeda { get; set; }
 
-    public string? Tarifa { get; set; }
-
-    public string? CompanhiaAerea { get; set; }
-
-    public int BilheteIdBilhete { get; set; }
+    public int TarifaIdTarifa { get; set; }
 
     public int ValorbagagemId { get; set; }
 
-    public virtual Bilhete BilheteIdBilheteNavigation { get; set; } = null!;
+    public int IdVoo1 { get; set; }
 
-    public virtual ICollection<Tarifa> Tarifas { get; set; } = new List<Tarifa>();
+    public int? IdVoo2 { get; set; }
+
+    public virtual ICollection<Bilhete> Bilhetes { get; set; } = new List<Bilhete>();
+
+    public virtual Voo IdVoo1Navigation { get; set; } = null!;
+
+    public virtual Voo? IdVoo2Navigation { get; set; }
+
+    public virtual Tarifa TarifaIdTarifaNavigation { get; set; } = null!;
 
     public virtual Valorbagagem Valorbagagem { get; set; } = null!;
-
-    public virtual ICollection<Voo> VooIdVoos { get; set; } = new List<Voo>();
 }

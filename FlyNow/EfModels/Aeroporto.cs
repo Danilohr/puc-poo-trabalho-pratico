@@ -7,7 +7,7 @@ public partial class Aeroporto
 {
     public int IdAeroporto { get; set; }
 
-    public string Sigla { get; set; } = null!;
+    public string? Sigla { get; set; }
 
     public string? Nome { get; set; }
 
@@ -15,5 +15,7 @@ public partial class Aeroporto
 
     public string? Uf { get; set; }
 
-    public virtual ICollection<Voo> VooIdVoos { get; set; } = new List<Voo>();
+    public virtual ICollection<Voo> VooIdAeroportoDestinoNavigations { get; set; } = new List<Voo>();
+
+    public virtual ICollection<Voo> VooIdAeroportoOrigemNavigations { get; set; } = new List<Voo>();
 }
