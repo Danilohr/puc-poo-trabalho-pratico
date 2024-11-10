@@ -8,6 +8,7 @@ namespace FlyNow.Controllers
 	[Route("api/[controller]")]
 	public class VooController : Base
 	{
+
 		public VooController(FlyNowContext context) : base(context)
 		{
 		}
@@ -24,14 +25,25 @@ namespace FlyNow.Controllers
 		[HttpPost]
 		public IActionResult Post(Voo voo)
 		{
-			// Validação 
-			List<Voo> lista = db.Voos.ToList();
+			db.Voos.Add(voo);
 
-			// Service
-			//VooService.Post(voo);
+			try
+			{
+				db.SaveChanges();
+			}
+			catch (Exception ex) {
+				return BadRequest(ex.Message);
+			}
 
+			return Ok();
+		}
 
-			return Ok(lista);
+		[HttpPut]
+		public IActionResult TornarPassageiroVip(CompanhiaAerea companhia, Usuario usuario)
+		{
+			service.TornarPassageiroVip(companhia, usuario);
+
+			return Ok();
 		}
 	}
 }
