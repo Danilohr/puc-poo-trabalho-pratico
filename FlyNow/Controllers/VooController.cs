@@ -17,6 +17,20 @@ namespace FlyNow.Controllers
 		{
 			List<Voo> lista = db.Voos.ToList();
 
+
+			return Ok(lista);
+		}
+
+		[HttpPost]
+		public IActionResult Post(Voo voo)
+		{
+			// Validação 
+			List<Voo> lista = db.Voos.ToList();
+
+			// Service
+			//VooService.Post(voo);
+
+
 			return Ok(lista);
 		}
 	}
