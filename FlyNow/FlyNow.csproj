@@ -7,14 +7,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\NewFolder\**" />
     <Compile Remove="Models\**" />
+    <Compile Remove="NewFolder\**" />
     <Compile Remove="Services\**" />
+    <Content Remove="Controllers\NewFolder\**" />
     <Content Remove="Models\**" />
+    <Content Remove="NewFolder\**" />
     <Content Remove="Services\**" />
+    <EmbeddedResource Remove="Controllers\NewFolder\**" />
     <EmbeddedResource Remove="Models\**" />
+    <EmbeddedResource Remove="NewFolder\**" />
     <EmbeddedResource Remove="Services\**" />
+    <None Remove="Controllers\NewFolder\**" />
     <None Remove="Models\**" />
+    <None Remove="NewFolder\**" />
     <None Remove="Services\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Data\PassageiroVIP.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,10 +42,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.10" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\NewFolder\" />
   </ItemGroup>
 
 </Project>

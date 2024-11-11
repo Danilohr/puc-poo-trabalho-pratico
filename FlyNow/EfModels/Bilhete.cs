@@ -16,4 +16,8 @@ public partial class Bilhete
     public virtual Passageiro PassageiroIdPassageiroNavigation { get; set; } = null!;
 
     public virtual Passagem PassagemIdPassagemNavigation { get; set; } = null!;
+
+		public int IdBilhete { get;  set; }
+
+		public int VooId { get;  set; }
 }
