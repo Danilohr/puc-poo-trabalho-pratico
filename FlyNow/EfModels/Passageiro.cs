@@ -11,7 +11,9 @@ public partial class Passageiro
 
     public string? Cpf { get; set; }
 
-    public string? Rg { get; set; }
+		public string? Email { get; set; }	
+
+		public string? Rg { get; set; }
 
     public int UsuarioIdUsuario { get; set; }
 
