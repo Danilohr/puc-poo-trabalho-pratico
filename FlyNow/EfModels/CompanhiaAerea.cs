@@ -15,7 +15,7 @@ public partial class CompanhiaAerea
 
     public double? TaxaRemuneracao { get; set; }
 
-    public virtual ICollection<CompanhiaaereaHasAgencium> CompanhiaaereaHasAgencia { get; set; } = new List<CompanhiaaereaHasAgencium>();
+    public virtual ICollection<CompanhiaaereaHasAgencia> CompanhiaaereaHasAgencia { get; set; } = new List<CompanhiaaereaHasAgencia>();
 
     public virtual ICollection<Tarifa> Tarifas { get; set; } = new List<Tarifa>();
 

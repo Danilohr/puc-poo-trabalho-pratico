@@ -13,7 +13,5 @@ public partial class Agencia
 
     public int FuncionarioIdFuncionario { get; set; }
 
-    public virtual ICollection<CompanhiaAereaHasAgencia> CompanhiaaereaHasAgencia { get; set; } = new List<CompanhiaAereaHasAgencia>();
-
-    public virtual Funcionario FuncionarioIdFuncionarioNavigation { get; set; } = null!;
+    public virtual Funcionario Funcionario { get; set; } = null!;
 }

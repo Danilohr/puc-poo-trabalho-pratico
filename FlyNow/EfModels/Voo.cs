@@ -23,15 +23,15 @@ public partial class Voo
 
     public int IdAeroportoDestino { get; set; }
 
-    public virtual Aeronave AeronaveIdAeronaveNavigation { get; set; } = null!;
+    public virtual Aeronave AeronaveVoo { get; set; } = null!;
 
     public virtual CompanhiaAerea CompanhiaaereaCodNavigation { get; set; } = null!;
 
     public virtual Aeroporto IdAeroportoDestinoNavigation { get; set; } = null!;
 
-    public virtual Aeroporto IdAeroportoOrigemNavigation { get; set; } = null!;
+    public virtual Aeroporto Aeroporto { get; set; } = null!;
 
-    public virtual Passagem? PassagemIdVoo1Navigation { get; set; }
+    public virtual Passagem? Passagem { get; set; }
 
-    public virtual ICollection<Passagem> PassagemIdVoo2Navigations { get; set; } = new List<Passagem>();
+    public virtual ICollection<Passagem> PassagensVoo { get; set; } = new List<Passagem>();
 }

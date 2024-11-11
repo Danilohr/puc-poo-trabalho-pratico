@@ -13,7 +13,7 @@ public partial class Bilhete
 
     public string? StatusPassageiro { get; set; }
 
-    public virtual Passageiro PassageiroIdPassageiroNavigation { get; set; } = null!;
+    public virtual Passageiro Passageiro { get; set; } = null!;
 
-    public virtual Passagem PassagemIdPassagemNavigation { get; set; } = null!;
+    public virtual Passagem Passagem { get; set; } = null!;
 }

@@ -19,11 +19,11 @@ public partial class Passagem
 
     public virtual ICollection<Bilhete> Bilhetes { get; set; } = new List<Bilhete>();
 
-    public virtual Voo IdVoo1Navigation { get; set; } = null!;
+    public virtual Voo Voo1 { get; set; } = null!;
 
-    public virtual Voo? IdVoo2Navigation { get; set; }
+    public virtual Voo? Voo2 { get; set; }
 
-    public virtual Tarifa TarifaIdTarifaNavigation { get; set; } = null!;
+    public virtual Tarifa Tarifa { get; set; } = null!;
 
     public virtual Valorbagagem Valorbagagem { get; set; } = null!;
 }
