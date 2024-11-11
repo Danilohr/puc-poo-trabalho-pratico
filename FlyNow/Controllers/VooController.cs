@@ -2,6 +2,7 @@
 using FlyNow.EfModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections;
 
 namespace FlyNow.Controllers
 {
@@ -42,18 +43,23 @@ namespace FlyNow.Controllers
 		[HttpGet("GetHistorico")]
 		public IActionResult GetHistorico(int idPassageiro)
 		{
-			var historicoVoos = db.Bilhetes
-														.Where(b => b.PassageiroIdPassageiro == idPassageiro)
-														.Include(b => b.PassagemIdPassagemNavigation)
-														.ThenInclude(p => p.IdVoo1Navigation) // Inclui o voo principal relacionado
-														.Include(b => b.PassagemIdPassagemNavigation.IdVoo2Navigation) // Inclui o voo de conexão, caso exista
-														.Select(b => new {
-															PassageiroId = b.PassageiroIdPassageiro,
-															Voos = new List<Voo> { b.PassagemIdPassagemNavigation.IdVoo1Navigation}.ToList() // Lista de voos não nulos
-														})
-														.ToList();
+			var bilhetesComVoos = db.Bilhetes
+				.Where(b => b.PassageiroIdPassageiro == idPassageiro)
+				.Select(b => new
+				{
+					Voo1 = b.Passagem.Voo1,
+					Voo2 = b.Passagem.Voo2
+				})
+				.ToList();
 
-			return Ok(historicoVoos);
+			// Combina ambos os voos em uma lista única
+			var listaDeVoos = bilhetesComVoos
+					.SelectMany(b => new[] { b.Voo1, b.Voo2 })
+					.Where(v => v != null) // Remove voos nulos
+					.OrderBy(v => v.Data) // Ordena por data do voo
+					.ToList();
+
+			return Ok(listaDeVoos);
 		}
 
 		[HttpGet("getVooInternacional")]
