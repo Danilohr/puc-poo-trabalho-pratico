@@ -8,18 +8,22 @@
 
   <ItemGroup>
     <Compile Remove="Controllers\NewFolder\**" />
+    <Compile Remove="Controllers\NovaPasta\**" />
     <Compile Remove="Models\**" />
     <Compile Remove="NewFolder\**" />
     <Compile Remove="Services\**" />
     <Content Remove="Controllers\NewFolder\**" />
+    <Content Remove="Controllers\NovaPasta\**" />
     <Content Remove="Models\**" />
     <Content Remove="NewFolder\**" />
     <Content Remove="Services\**" />
     <EmbeddedResource Remove="Controllers\NewFolder\**" />
+    <EmbeddedResource Remove="Controllers\NovaPasta\**" />
     <EmbeddedResource Remove="Models\**" />
     <EmbeddedResource Remove="NewFolder\**" />
     <EmbeddedResource Remove="Services\**" />
     <None Remove="Controllers\NewFolder\**" />
+    <None Remove="Controllers\NovaPasta\**" />
     <None Remove="Models\**" />
     <None Remove="NewFolder\**" />
     <None Remove="Services\**" />

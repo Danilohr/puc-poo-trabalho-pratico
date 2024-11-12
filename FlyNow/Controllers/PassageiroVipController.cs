@@ -17,26 +17,27 @@ namespace FlyNow.Controllers
 			_context = context;
 		}
 
-		// Método para alterar voo sem custo adicional para VIPs
-		[HttpPost("AlterarVooSemCusto")]
-		public IActionResult AlterarVooSemCusto(int idPassageiro, int idBilhete, int novoVooId)
+		// Método para alterar o status do bilhete sem custo adicional para VIPs
+		[HttpPost("AlterarStatusBilhete")]
+		public IActionResult AlterarStatusBilhete(int idPassageiro, int idPassagem, string novoStatus)
 		{
 			// Verifica se o passageiro é VIP
 			bool isVip = _context.PassageiroVIPs.Any(pv => pv.PassageiroIdPassageiro == idPassageiro);
 
 			if (!isVip)
 			{
-				return BadRequest("Apenas passageiros VIP podem alterar voos sem custo.");
+				return BadRequest("Apenas passageiros VIP podem alterar o status do bilhete sem custo.");
 			}
 
-			// Busca o bilhete e atualiza o voo
-			var bilhete = _context.Bilhetes.FirstOrDefault(b => b.IdBilhete == idBilhete && b.PassageiroIdPassageiro == idPassageiro);
+			// Busca o bilhete e a passagem associada para atualizar o status
+			var bilhete = _context.Bilhetes.FirstOrDefault(b => b.PassagemIdPassagem == idPassagem && b.PassageiroIdPassageiro == idPassageiro);
 			if (bilhete == null)
 			{
 				return NotFound("Bilhete não encontrado para o passageiro especificado.");
 			}
 
-			bilhete.VooId = novoVooId;
+			// Atualiza o status do bilhete
+			bilhete.StatusPassageiro = novoStatus;
 
 			try
 			{
@@ -44,10 +45,10 @@ namespace FlyNow.Controllers
 			}
 			catch (Exception ex)
 			{
-				return BadRequest($"Erro ao alterar o voo: {ex.Message}");
+				return BadRequest($"Erro ao alterar o status do bilhete: {ex.Message}");
 			}
 
-			return Ok("Voo alterado com sucesso sem custo adicional para passageiro VIP.");
+			return Ok("Status do bilhete alterado com sucesso sem custo adicional para passageiro VIP.");
 		}
 
 		// Método para calcular o custo de bagagem com desconto para VIPs
@@ -80,26 +81,29 @@ namespace FlyNow.Controllers
 			return Ok(new { CustoTotal = custoTotal });
 		}
 
-		// Método para cancelar voo sem custo adicional para VIPs
-		[HttpPost("CancelarVooSemCusto")]
-		public IActionResult CancelarVooSemCusto(int idPassageiro, int idBilhete)
+		// Método para cancelar a passagem sem custo adicional para VIPs
+		[HttpPost("CancelarPassagemSemCusto")]
+		public IActionResult CancelarPassagemSemCusto(int idPassageiro, int idPassagem)
 		{
 			// Verifica se o passageiro é VIP
 			bool isVip = _context.PassageiroVIPs.Any(pv => pv.PassageiroIdPassageiro == idPassageiro);
 
 			if (!isVip)
 			{
-				return BadRequest("Apenas passageiros VIP podem cancelar voos sem custo.");
+				return BadRequest("Apenas passageiros VIP podem cancelar passagens sem custo.");
 			}
 
-			// Busca o bilhete e remove-o
-			var bilhete = _context.Bilhetes.FirstOrDefault(b => b.IdBilhete == idBilhete && b.PassageiroIdPassageiro == idPassageiro);
-			if (bilhete == null)
+			// Busca a passagem e o bilhete associados e remove a passagem
+			var passagem = _context.Passagems.FirstOrDefault(p => p.IdPassagem == idPassagem);
+			var bilhete = _context.Bilhetes.FirstOrDefault(b => b.PassagemIdPassagem == idPassagem && b.PassageiroIdPassageiro == idPassageiro);
+
+			if (passagem == null || bilhete == null)
 			{
-				return NotFound("Bilhete não encontrado para o passageiro especificado.");
+				return NotFound("Passagem ou bilhete não encontrados para o passageiro especificado.");
 			}
 
 			_context.Bilhetes.Remove(bilhete);
+			_context.Passagems.Remove(passagem);
 
 			try
 			{
@@ -107,10 +111,10 @@ namespace FlyNow.Controllers
 			}
 			catch (Exception ex)
 			{
-				return BadRequest($"Erro ao cancelar o voo: {ex.Message}");
+				return BadRequest($"Erro ao cancelar a passagem: {ex.Message}");
 			}
 
-			return Ok("Voo cancelado com sucesso sem custo adicional para passageiro VIP.");
+			return Ok("Passagem cancelada com sucesso sem custo adicional para passageiro VIP.");
 		}
 	}
 }
