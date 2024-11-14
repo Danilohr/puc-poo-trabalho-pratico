@@ -19,7 +19,7 @@ namespace FlyNow.Controllers
 
 		// Método para alterar o status do bilhete sem custo adicional para VIPs
 		[HttpPost("AlterarStatusBilhete")]
-		public IActionResult AlterarStatusBilhete(int idPassageiro, int idPassagem, string novoStatus)
+		public IActionResult AlterarStatusBilhete(int idPassageiro, int idPassagem, StatusPassagem novoStatus)
 		{
 			// Verifica se o passageiro é VIP
 			bool isVip = _context.PassageiroVIPs.Any(pv => pv.PassageiroIdPassageiro == idPassageiro);

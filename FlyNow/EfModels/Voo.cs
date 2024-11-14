@@ -9,7 +9,7 @@ public partial class Voo
 
     public string? CodVoo { get; set; }
 
-    public DateTime? Data { get; set; }
+    public DateTime Data { get; set; }
 
     public sbyte? EhInternacional { get; set; }
 
