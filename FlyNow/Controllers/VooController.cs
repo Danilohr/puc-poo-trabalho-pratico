@@ -69,7 +69,7 @@ namespace FlyNow.Controllers
 
 			return Ok(lista);
 		}
-
-
 	}
+
 }
+

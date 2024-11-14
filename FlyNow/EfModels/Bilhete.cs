@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FlyNow.Controllers;
+using System;
 using System.Collections.Generic;
 
 namespace FlyNow.EfModels;
@@ -11,7 +12,7 @@ public partial class Bilhete
 
     public sbyte? BilheteInternacional { get; set; }
 
-    public string? StatusPassageiro { get; set; }
+    public StatusPassagem? StatusPassageiro { get; set; }
 
     public virtual Passageiro Passageiro { get; set; } = null!;
 
