@@ -22,8 +22,8 @@ public class BilhetesController : ControllerBase
 	public async Task<ActionResult<IEnumerable<Bilhete>>> GetBilhetes()
 	{
 		return await _context.Bilhetes
-				.Include(b => b.PassageiroIdPassageiroNavigation) // Inclui dados do Passageiro relacionado
-				.Include(b => b.PassagemIdPassagemNavigation)   // Inclui dados da Passagem relacionada
+				.Include(b => b.Passageiro) // Inclui dados do Passageiro relacionado
+				.Include(b => b.Passagem)   // Inclui dados da Passagem relacionada
 				.ToListAsync();
 	}
 
