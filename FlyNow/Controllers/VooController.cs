@@ -10,9 +10,13 @@ namespace FlyNow.Controllers
 	[Route("api/[controller]")]
 	public class VooController : Base
 	{
+		private readonly FlyNowContext _context;
+		private readonly ILog _logServico;
 
-		public VooController(FlyNowContext context) : base(context)
+		public VooController(FlyNowContext context, ILog logServico)
 		{
+			_context = context;
+			_logServico = logServico;
 		}
 
 		[HttpGet]
@@ -36,8 +40,8 @@ namespace FlyNow.Controllers
 			catch (Exception ex) {
 				return BadRequest(ex.Message);
 			}
-
-			return Ok();
+			_logServico.RegistrarLog($"Novo voo criado: Código {voo.CodVoo}, Data {voo.Data}.");
+			return Ok("Voo criado com sucesso.");
 		}
 
 		[HttpGet("GetHistorico")]
@@ -60,6 +64,7 @@ namespace FlyNow.Controllers
 					.ToList();
 
 			return Ok(listaDeVoos);
+			_logServico.RegistrarLog($"Consulta de histórico de voos para passageiro {idPassageiro}.");
 		}
 
 		[HttpGet("getVooInternacional")]
@@ -67,6 +72,7 @@ namespace FlyNow.Controllers
 		{
 			var lista = db.Voos.Where(i => i.EhInternacional == 1);
 
+			_logServico.RegistrarLog("Consulta de voos internacionais realizada.");
 			return Ok(lista);
 		}
 	}

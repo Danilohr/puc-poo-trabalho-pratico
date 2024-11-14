@@ -5,6 +5,9 @@ using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.Services.AddScoped<ILog, ServicoLog>();// Adiciona serviços de log
+
 builder.Services.AddControllers();
 
 builder.Services.AddControllers()

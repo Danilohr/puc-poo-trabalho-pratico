@@ -11,10 +11,12 @@ namespace FlyNow.Controllers
 	public class PassageiroVipController : ControllerBase
 	{
 		private readonly FlyNowContext _context;
+		private readonly ILog _logServico;
 
-		public PassageiroVipController(FlyNowContext context)
+		public PassageiroVipController(FlyNowContext context, ILog logServico)
 		{
 			_context = context;
+			_logServico = logServico;
 		}
 
 		// Método para alterar o status do bilhete sem custo adicional para VIPs
@@ -48,6 +50,7 @@ namespace FlyNow.Controllers
 				return BadRequest($"Erro ao alterar o status do bilhete: {ex.Message}");
 			}
 
+			_logServico.RegistrarLog($"Passagem {idPassagem} do passageiro {idPassageiro} cancelada sem custo.");
 			return Ok("Status do bilhete alterado com sucesso sem custo adicional para passageiro VIP.");
 		}
 
@@ -79,6 +82,8 @@ namespace FlyNow.Controllers
 			}
 
 			return Ok(new { CustoTotal = custoTotal });
+			_logServico.RegistrarLog($"Cálculo de custo de bagagem realizado para passageiro {idPassageiro}, quantidade de bagagens: {quantidadeBagagens}.");
+
 		}
 
 		// Método para cancelar a passagem sem custo adicional para VIPs
@@ -114,7 +119,8 @@ namespace FlyNow.Controllers
 				return BadRequest($"Erro ao cancelar a passagem: {ex.Message}");
 			}
 
-			return Ok("Passagem cancelada com sucesso sem custo adicional para passageiro VIP.");
+			_logServico.RegistrarLog($"Passagem {idPassagem} do passageiro {idPassageiro} cancelada sem custo.");
+   			return Ok("Passagem cancelada com sucesso sem custo adicional para passageiro VIP.");
 		}
 	}
 }

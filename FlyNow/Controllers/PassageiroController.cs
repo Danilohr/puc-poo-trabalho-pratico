@@ -10,10 +10,12 @@ namespace FlyNow.Controllers
 	public class PassageiroController : ControllerBase
 	{
 		private readonly FlyNowContext _context;
+		private readonly ILog _logServico;
 
-		public PassageiroController(FlyNowContext context)
+		public PassageiroController(FlyNowContext context, ILog logServico)
 		{
 			_context = context;
+			_logServico = logServico;
 		}
 
 		[HttpGet("GetPassageirosVip/{idCompanhia}")]
@@ -37,6 +39,7 @@ namespace FlyNow.Controllers
 				return NotFound("Nenhum passageiro VIP encontrado para esta companhia aérea.");
 			}
 
+			_logServico.RegistrarLog($"Consulta de passageiros VIP para a companhia {idCompanhia}.");
 			return Ok(passageirosVip);
 		}
 
@@ -69,6 +72,8 @@ namespace FlyNow.Controllers
 			{
 				return BadRequest($"Erro ao tornar passageiro VIP: {ex.Message}");
 			}
+
+			logServico.RegistrarLog($"Passageiro com ID {idPassageiro} tornado VIP na companhia {idCompanhia}.");
 
 			return Ok("Passageiro tornado VIP com sucesso.");
 		}

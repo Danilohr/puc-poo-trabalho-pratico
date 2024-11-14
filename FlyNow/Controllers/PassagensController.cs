@@ -8,16 +8,19 @@ using Microsoft.EntityFrameworkCore;
 public class PassagensController : ControllerBase
 {
 	private readonly FlyNowContext _context;
+	private readonly ILog _logServico;
 
-	public PassagensController(FlyNowContext context)
+	public PassagensController(FlyNowContext context, ILog logServico)
 	{
 		_context = context;
+		_logServico = logServico;
 	}
 
 	// GET: api/Passagens
 	[HttpGet]
 	public async Task<ActionResult<IEnumerable<Passagem>>> GetPassagens()
 	{
+		_logServico.RegistrarLog("Consulta realizada para listar todas as passagens.");
 		return await _context.Passagems.ToListAsync();
 	}
 }

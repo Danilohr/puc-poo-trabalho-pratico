@@ -11,10 +11,12 @@ using System.Threading.Tasks;
 public class BilhetesController : ControllerBase
 {
 	private readonly FlyNowContext _context;
+	private readonly ILog _logServico;
 
-	public BilhetesController(FlyNowContext context)
+	public BilhetesController(FlyNowContext context, ILog logServico)
 	{
 		_context = context;
+		_logServico = logServico;
 	}
 
 	// GET: api/Bilhetes
@@ -50,6 +52,8 @@ public class BilhetesController : ControllerBase
 
 		bilhete.StatusPassageiro = StatusPassagem.EmbarqueRealizado;
 
+		_logServico.RegistrarLog($"Check-in realizado para o bilhete com ID {id}.");
+
 		return Ok("Check-in realizado com sucesso.");
 	}
 
@@ -67,6 +71,9 @@ public class BilhetesController : ControllerBase
 		if (bilhete.StatusPassageiro != StatusPassagem.CheckInRealizado && bilhete.StatusPassageiro != StatusPassagem.EmbarqueRealizado)
 		{
 			bilhete.StatusPassageiro = StatusPassagem.NoShow;
+
+			_logServico.RegistrarLog($"No Show registrado para o bilhete com ID {id}.");
+
 			return Ok("Status NO SHOW registrado.");
 		}
 
