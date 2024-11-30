@@ -32,6 +32,10 @@ public partial class Voo
     public virtual Aeroporto Aeroporto { get; set; } = null!;
 
     public virtual Passagem? Passagem { get; set; }
+	  
+		public float VelocidadeMedia { get; set; }
 
-    public virtual ICollection<Passagem> PassagensVoo { get; set; } = new List<Passagem>();
+		public DateTime HorarioPrevistoChegada { get; set; }
+
+	public virtual ICollection<Passagem> PassagensVoo { get; set; } = new List<Passagem>();
 }
