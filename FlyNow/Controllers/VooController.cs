@@ -3,6 +3,7 @@ using FlyNow.EfModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
+using FlyNow.Interfaces;
 
 namespace FlyNow.Controllers
 {
@@ -10,9 +11,11 @@ namespace FlyNow.Controllers
 	[Route("api/[controller]")]
 	public class VooController : Base
 	{
+		private readonly ILog _logServico;
 
-		public VooController(FlyNowContext context) : base(context)
+		public VooController(FlyNowContext context, ILog logServico) : base(context) // Passa o contexto para a base
 		{
+			_logServico = logServico; // Inicia o serviço de log
 		}
 
 		[HttpGet]
@@ -33,11 +36,12 @@ namespace FlyNow.Controllers
 			{
 				db.SaveChanges();
 			}
-			catch (Exception ex) {
+			catch (Exception ex)
+			{
 				return BadRequest(ex.Message);
 			}
-
-			return Ok();
+			_logServico.RegistrarLog($"Novo voo criado: Código {voo.CodVoo}, Data {voo.Data}.");
+			return Ok("Voo criado com sucesso.");
 		}
 
 		[HttpGet("GetHistorico")]
@@ -60,6 +64,7 @@ namespace FlyNow.Controllers
 					.ToList();
 
 			return Ok(listaDeVoos);
+			_logServico.RegistrarLog($"Consulta de histórico de voos para passageiro {idPassageiro}.");
 		}
 
 		[HttpGet("getVooInternacional")]
@@ -67,9 +72,9 @@ namespace FlyNow.Controllers
 		{
 			var lista = db.Voos.Where(i => i.EhInternacional == 1);
 
+			_logServico.RegistrarLog("Consulta de voos internacionais realizada.");
 			return Ok(lista);
 		}
 	}
 
 }
-

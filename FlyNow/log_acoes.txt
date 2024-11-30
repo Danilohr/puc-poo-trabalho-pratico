@@ -1,0 +1,8 @@
+2024-11-30 13:04:34 - Consulta de voos internacionais realizada.
+2024-11-30 13:05:12 - Consulta de passageiros VIP para a companhia 1.
+2024-11-30 13:05:39 - Passageiro com ID 3 tornado VIP na companhia 2.
+2024-11-30 13:05:46 - Consulta de passageiros VIP para a companhia 1.
+2024-11-30 13:05:58 - Consulta de passageiros VIP para a companhia 2.
+2024-11-30 13:39:51 - Passageiro com ID 4 tornado VIP na companhia 2.
+2024-11-30 14:03:39 - Passageiro com ID 3 tornado VIP na companhia 1.
+2024-11-30 14:11:31 - Passageiro com ID 4 tornado VIP na companhia 3.
