@@ -5,17 +5,17 @@ namespace FlyNow.Services
 {
 	public class ServicoLog : ILog
 	{
-		private readonly string _caminhoArquivo;
-		public ServicoLog(string caminhoArquivo = "log_acoes.txt")
+		private readonly string caminhoArquivo;
+		public ServicoLog()
 		{
-			_caminhoArquivo = caminhoArquivo;
+			caminhoArquivo = "Logs/log_acoes.txt";
 		}
 		public void RegistrarLog(string operacao)
 		{
 			try
 			{
 				string mensagem = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {operacao}";
-				File.AppendAllText(_caminhoArquivo, mensagem + Environment.NewLine);
+				File.AppendAllText(caminhoArquivo, mensagem + Environment.NewLine);
 			}
 			catch (Exception ex)
 			{

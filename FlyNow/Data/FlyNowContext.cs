@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using FlyNow.EfModels;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
 namespace FlyNow.Data;
 
