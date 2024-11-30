@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using FlyNow.Interfaces;
+using FlyNow.Services;
 
 namespace FlyNow.Controllers
 {
@@ -11,12 +12,8 @@ namespace FlyNow.Controllers
 	[Route("api/[controller]")]
 	public class VooController : Base
 	{
-		private readonly ILog _logServico;
-
-		public VooController(FlyNowContext context, ILog logServico) : base(context) // Passa o contexto para a base
-		{
-			_logServico = logServico; // Inicia o serviço de log
-		}
+		public VooController() : base (new FlyNowContext(), new ServicoLog()) {}
+		public VooController(FlyNowContext db) : base (db, new ServicoLog()) { }
 
 		[HttpGet]
 		public IActionResult Get()
@@ -40,7 +37,7 @@ namespace FlyNow.Controllers
 			{
 				return BadRequest(ex.Message);
 			}
-			_logServico.RegistrarLog($"Novo voo criado: Código {voo.CodVoo}, Data {voo.Data}.");
+			logServico.RegistrarLog($"Novo voo criado: Código {voo.CodVoo}, Data {voo.Data}.");
 			return Ok("Voo criado com sucesso.");
 		}
 
@@ -63,8 +60,8 @@ namespace FlyNow.Controllers
 					.OrderBy(v => v.Data) // Ordena por data do voo
 					.ToList();
 
+			logServico.RegistrarLog($"Consulta de histórico de voos para passageiro {idPassageiro}.");
 			return Ok(listaDeVoos);
-			_logServico.RegistrarLog($"Consulta de histórico de voos para passageiro {idPassageiro}.");
 		}
 
 		[HttpGet("getVooInternacional")]
@@ -72,8 +69,19 @@ namespace FlyNow.Controllers
 		{
 			var lista = db.Voos.Where(i => i.EhInternacional == 1);
 
-			_logServico.RegistrarLog("Consulta de voos internacionais realizada.");
+			logServico.RegistrarLog("Consulta de voos internacionais realizada.");
 			return Ok(lista);
+		}
+
+
+		[HttpGet("buscar-voo")]
+		public IActionResult GetVoo([FromQuery] int idAeroOrigem, [FromQuery] int idAeroDestino, [FromQuery] DateTime data)
+		{
+			var voo = db.Voos
+				.Where(v => v.IdAeroportoOrigem == idAeroOrigem && v.IdAeroportoDestino == idAeroDestino && v.Data == data)
+				.ToList();
+
+			return Ok(voo);
 		}
 	}
 

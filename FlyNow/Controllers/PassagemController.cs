@@ -1,18 +1,23 @@
 ﻿using FlyNow.Data;
 using FlyNow.EfModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using FlyNow.Interfaces;
+using FlyNow.Controllers;
+using FlyNow.Services;
 
-namespace FlyNow.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class PassagemController : Base
 {
-	[ApiController]
-	[Route("api/[controller]")]
-	public class PassagemController : Base
+	public PassagemController() : base (new FlyNowContext(), new ServicoLog()) {}
+	public PassagemController(FlyNowContext db) : base (db, new ServicoLog()) { }
+
+	// GET: api/Passagens
+	[HttpGet]
+	public async Task<ActionResult<IEnumerable<Passagem>>> GetPassagens()
 	{
-		private static List<Passagem> _passagens = new List<Passagem>();
-		public PassagemController(FlyNowContext context) : base(context)
-		{
-
-		}
-
+		logServico.RegistrarLog("Consulta realizada para listar todas as passagens.");
+		return await db.Passagems.ToListAsync();
 	}
 }

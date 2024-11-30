@@ -2,6 +2,7 @@
 using FlyNow.Data;
 using FlyNow.EfModels;
 using FlyNow.Interfaces;
+using FlyNow.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -9,40 +10,33 @@ using System.Threading.Tasks;
 
 [ApiController]
 [Route("api/[controller]")]
-public class BilhetesController : ControllerBase
+public class BilhetesController : Base
 {
-	private readonly FlyNowContext _context;
-	private readonly FlyNow.Interfaces.ILog _logServico;
-
-	public BilhetesController(FlyNowContext context, ILog logServico)
-	{
-		_context = context;
-		_logServico = logServico;
-	}
+	public BilhetesController() : base(new FlyNowContext(), new ServicoLog()) {	}
+	public BilhetesController(FlyNowContext context) : base(context, new ServicoLog()) { }
 
 	// GET: api/Bilhetes
 	[HttpGet]
 	public async Task<ActionResult<IEnumerable<Bilhete>>> GetBilhetes()
 	{
-		return await _context.Bilhetes
+		return await db.Bilhetes
 				.Include(b => b.Passageiro) // Inclui dados do Passageiro relacionado
 				.Include(b => b.Passagem)   // Inclui dados da Passagem relacionada
 				.ToListAsync();
 	}
 
 	// Método para realizar o check-in
-	private static List<Voo> _Voo = new List<Voo>();
-	private static List<Bilhete> _bilhete = new List<Bilhete>();
-	private static StatusPassagem StatusPassagem;
+	private List<Voo> _Voo = new List<Voo>();
 
 	[HttpPost("{id}/checkin")]
-	public IActionResult RealizarCheckIn(int id)
+	public IActionResult RealizarCheckIn(int idBilhete)
 	{
-		var Voo = _Voo.FirstOrDefault(p => p.IdVoo == id);
-		var bilhete = _bilhete.FirstOrDefault(p => p.PassagemIdPassagem == id);
+		var bilhete = base.db.Bilhetes.FirstOrDefault(p => p.PassagemIdPassagem == idBilhete);
+		var Voo = base.db.Voos.FirstOrDefault(v => v.IdVoo == db.Passagems.FirstOrDefault(p => p.IdPassagem == bilhete.PassagemIdPassagem).Voo1.IdVoo);
 		if (Voo == null) return NotFound("Passagem não encontrada.");
 
 		var agora = DateTime.Now;
+
 		var periodoInicio = Voo.Data.AddHours(-48);
 		var periodoFim = Voo.Data.AddMinutes(-30);
 
@@ -52,8 +46,9 @@ public class BilhetesController : ControllerBase
 		}
 
 		bilhete.StatusPassageiro = StatusPassagem.EmbarqueRealizado;
+		base.db.SaveChanges();
 
-		_logServico.RegistrarLog($"Check-in realizado para o bilhete com ID {id}.");
+		logServico.RegistrarLog($"Check-in realizado para o bilhete com ID {idBilhete}.");
 
 		return Ok("Check-in realizado com sucesso.");
 	}
@@ -62,7 +57,7 @@ public class BilhetesController : ControllerBase
 	[HttpPost("{id}/registrarNoShow")]
 	public IActionResult RegistrarNoShow(int id)
 	{
-		var bilhete = _bilhete.FirstOrDefault(p => p.PassageiroIdPassageiro == id);
+		var bilhete = base.db.Bilhetes.FirstOrDefault(p => p.PassageiroIdPassageiro == id);
 
 		if (bilhete == null)
 		{
@@ -73,7 +68,7 @@ public class BilhetesController : ControllerBase
 		{
 			bilhete.StatusPassageiro = StatusPassagem.NoShow;
 
-			_logServico.RegistrarLog($"No Show registrado para o bilhete com ID {id}.");
+			logServico.RegistrarLog($"No Show registrado para o bilhete com ID {id}.");
 
 			return Ok("Status NO SHOW registrado.");
 		}
