@@ -1,6 +1,7 @@
 ﻿using FlyNow.Controllers;
 using FlyNow.Data;
 using FlyNow.EfModels;
+using FlyNow.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 public class BilhetesController : ControllerBase
 {
 	private readonly FlyNowContext _context;
-	private readonly ILog _logServico;
+	private readonly FlyNow.Interfaces.ILog _logServico;
 
 	public BilhetesController(FlyNowContext context, ILog logServico)
 	{

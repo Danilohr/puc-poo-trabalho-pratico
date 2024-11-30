@@ -2,13 +2,14 @@
 using FlyNow.EfModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using FlyNow.Interfaces;
 
 [ApiController]
 [Route("api/[controller]")]
 public class PassagensController : ControllerBase
 {
 	private readonly FlyNowContext _context;
-	private readonly ILog _logServico;
+	private readonly FlyNow.Interfaces.ILog _logServico;
 
 	public PassagensController(FlyNowContext context, ILog logServico)
 	{

@@ -2,6 +2,8 @@
 using FlyNow.EfModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using FlyNow.Interfaces;
+using FlyNow.Services;
 
 namespace FlyNow.Controllers
 {
@@ -73,7 +75,7 @@ namespace FlyNow.Controllers
 				return BadRequest($"Erro ao tornar passageiro VIP: {ex.Message}");
 			}
 
-			logServico.RegistrarLog($"Passageiro com ID {idPassageiro} tornado VIP na companhia {idCompanhia}.");
+			_logServico.RegistrarLog($"Passageiro com ID {idPassageiro} tornado VIP na companhia {idCompanhia}.");
 
 			return Ok("Passageiro tornado VIP com sucesso.");
 		}

@@ -3,6 +3,7 @@ using FlyNow.EfModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
+using FlyNow.Interfaces;
 
 namespace FlyNow.Controllers
 {
@@ -10,13 +11,11 @@ namespace FlyNow.Controllers
 	[Route("api/[controller]")]
 	public class VooController : Base
 	{
-		private readonly FlyNowContext _context;
 		private readonly ILog _logServico;
 
-		public VooController(FlyNowContext context, ILog logServico)
+		public VooController(FlyNowContext context, ILog logServico) : base(context) // Passa o contexto para a base
 		{
-			_context = context;
-			_logServico = logServico;
+			_logServico = logServico; // Inicia o serviço de log
 		}
 
 		[HttpGet]

@@ -1,18 +1,15 @@
-using System;
+ï»¿using System;
 using System.IO;
 using FlyNow.Interfaces;
-
 namespace FlyNow.Services
 {
 	public class ServicoLog : ILog
 	{
 		private readonly string _caminhoArquivo;
-
 		public ServicoLog(string caminhoArquivo = "log_acoes.txt")
 		{
 			_caminhoArquivo = caminhoArquivo;
 		}
-
 		public void RegistrarLog(string operacao)
 		{
 			try
@@ -22,7 +19,7 @@ namespace FlyNow.Services
 			}
 			catch (Exception ex)
 			{
-				// Opcional: você pode salvar erros de log em outro arquivo ou lançar a exceção
+				// Opcional: vocÃª pode salvar erros de log em outro arquivo ou lanÃ§ar a exceÃ§Ã£o
 				Console.WriteLine($"Erro ao registrar log: {ex.Message}");
 			}
 		}
