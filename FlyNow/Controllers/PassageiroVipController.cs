@@ -3,6 +3,7 @@ using FlyNow.EfModels;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
+using FlyNow.Interfaces;
 
 namespace FlyNow.Controllers
 {
@@ -11,7 +12,7 @@ namespace FlyNow.Controllers
 	public class PassageiroVipController : ControllerBase
 	{
 		private readonly FlyNowContext _context;
-		private readonly ILog _logServico;
+		private readonly FlyNow.Interfaces.ILog _logServico;
 
 		public PassageiroVipController(FlyNowContext context, ILog logServico)
 		{
@@ -120,7 +121,7 @@ namespace FlyNow.Controllers
 			}
 
 			_logServico.RegistrarLog($"Passagem {idPassagem} do passageiro {idPassageiro} cancelada sem custo.");
-   			return Ok("Passagem cancelada com sucesso sem custo adicional para passageiro VIP.");
+			return Ok("Passagem cancelada com sucesso sem custo adicional para passageiro VIP.");
 		}
 	}
 }

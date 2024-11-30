@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using FlyNow.Data;
 using System.Configuration;
+using FlyNow.Interfaces;
+using FlyNow.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
