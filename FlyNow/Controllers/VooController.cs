@@ -13,9 +13,9 @@ namespace FlyNow.Controllers
 	{
 		private readonly ILog _logServico;
 
-		public VooController(FlyNowContext context, ILog logServico) : base(context) // Passa o contexto para a base
+		public VooController(FlyNowContext context, ILog logServico) : base(context) 
 		{
-			_logServico = logServico; // Inicia o serviço de log
+			_logServico = logServico;
 		}
 		private float CalculaDistanciaKm(float lat1, float long1, float lat2, float long2)
 		{
@@ -103,35 +103,9 @@ namespace FlyNow.Controllers
 			_logServico.RegistrarLog("Consulta de voos internacionais realizada.");
 			return Ok(lista);
 		}
-	}
-	 private float CalculaDistanciaKm(float x1, float y1, float x2, float y2)
-		{
-			return 110.57f * MathF.Sqrt(MathF.Pow(x2 - x1, 2) + MathF.Pow(y2 - y1, 2));
-		}
-		private void AtualizarDuracaoEHorario(Voo voo)
-		{
-
-			var aeroportoOrigem = db.Aeroportos.Find(voo.IdAeroportoOrigem);
-			var aeroportoDestino = db.Aeroportos.Find(voo.IdAeroportoDestino);
-
-			if (aeroportoOrigem == null || aeroportoDestino == null)
-				throw new Exception("Coordenadas dos aeroportos não encontradas.");
-
-
-			float distancia = CalculaDistanciaKm(
-					aeroportoOrigem.Latitude,
-					aeroportoOrigem.Longitude,
-					aeroportoDestino.Latitude,
-					aeroportoDestino.Longitude);
-
-			float duracaoHoras = distancia / voo.VelocidadeMedia;
-
-
-			voo.Duracao = TimeOnly.FromTimeSpan(TimeSpan.FromHours(duracaoHoras));
-			voo.HorarioPrevistoChegada = voo.Data.AddHours(duracaoHoras);
-		}
+	
 		[HttpPost]
-		public IActionResult Post(Voo voo)
+		public IActionResult SaveVoo(Voo voo)
 		{
 			try
 			{
@@ -149,8 +123,5 @@ namespace FlyNow.Controllers
 
 
 	}
-
-}
-
 
 }
