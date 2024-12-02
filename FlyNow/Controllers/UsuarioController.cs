@@ -25,5 +25,23 @@ namespace FlyNow.Controllers
 			return Ok(voo);
 		}
 
+		[HttpGet("Logar")]
+		public IActionResult Logar([FromQuery] string login, [FromQuery] string senha)
+		{
+			if (string.IsNullOrEmpty(login))
+				return BadRequest("O login é obrigatório.");
+			if (string.IsNullOrEmpty(senha))
+				return BadRequest("A senha é obrigatória.");
+
+			var usuarioExistente = db.Usuarios.SingleOrDefault(u => u.Login == login);
+			if (usuarioExistente == null)
+				return Unauthorized("Usuário não encontrado.");
+
+			if (usuarioExistente.Senha != senha)
+				return Unauthorized("Senha incorreta.");
+
+			return Ok(usuarioExistente);
+		}
+
 	}
 }
