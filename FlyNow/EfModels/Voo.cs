@@ -13,7 +13,7 @@ public partial class Voo
 
     public sbyte? EhInternacional { get; set; }
 
-    public TimeOnly? Duracao { get; set; }
+    public TimeSpan? Duracao { get; set; }
 
     public int CompanhiaaereaCod { get; set; }
 

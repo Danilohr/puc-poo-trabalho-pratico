@@ -27,49 +27,97 @@ public class BilhetesController : ControllerBase
 				.ToListAsync();
 	}
 
-	// Método para realizar o check-in
 	private static List<Voo> _Voo = new List<Voo>();
 	private static List<Bilhete> _bilhete = new List<Bilhete>();
 	private static StatusPassagem StatusPassagem;
 
-	[HttpPost("{id}/checkin")]
+	// Método para realizar o check-in
+	[HttpPost("{id}/realizarCheckIn")]
 	public IActionResult RealizarCheckIn(int id)
 	{
-		var Voo = _Voo.FirstOrDefault(p => p.IdVoo == id);
-		var bilhete = _bilhete.FirstOrDefault(p => p.PassagemIdPassagem == id);
-		if (Voo == null) return NotFound("Passagem não encontrada.");
+		var passagem = _context.Passagems
+				.Include(p => p.Bilhetes)
+				.FirstOrDefault(p => p.IdPassagem == id);
 
-		var agora = DateTime.Now;
-		var periodoInicio = Voo.Data.AddHours(-48);
-		var periodoFim = Voo.Data.AddMinutes(-30);
+		if (passagem == null)
+			return NotFound("Passagem não encontrada.");
 
-		if (agora < periodoInicio || agora > periodoFim)
+		var voo = _context.Voos.FirstOrDefault(v => v.IdVoo == passagem.IdVoo1);
+
+		if (voo == null)
+			return NotFound("Voo não encontrado.");
+
+		var horaAtual = DateTime.Now;
+
+		// Verifica se está dentro do período permitido
+		if (horaAtual >= voo.Data.AddHours(-48) && horaAtual <= voo.Data.AddMinutes(-30))
 		{
-			return BadRequest("Check-in fora do período permitido.");
+			foreach (var bilhete in passagem.Bilhetes)
+			{
+				bilhete.StatusPassageiro = StatusPassagem.CheckInRealizado;
+				_context.SaveChanges();
+			}
+
+			// Gerar cartão de embarque
+			var cartaoEmbarque = new
+			{
+				NomePassageiro = passagem.Bilhetes.First().PassageiroIdPassageiroNavigation.Nome,
+				CodigoVoo = voo.CodVoo,
+				HorarioEmbarque = voo.Data.AddMinutes(-30),
+				Assento = "A definir" // Pode ser integrado com a lógica de assentos, não olhei como fazer isso.
+			};
+
+			return Ok(new { Mensagem = "Check-in realizado com sucesso.", CartaoEmbarque = cartaoEmbarque });
 		}
 
-		bilhete.StatusPassageiro = StatusPassagem.EmbarqueRealizado;
+		foreach (var bilhete in passagem.Bilhetes)
+		{
+			// Verifica se o status do passageiro ainda não foi atualizado para "CheckInRealizado"
+			if (bilhete.StatusPassageiro != StatusPassagem.CheckInRealizado)
+			{
+				bilhete.StatusPassageiro = StatusPassagem.NoShow;
+			}
+		}
 
-		return Ok("Check-in realizado com sucesso.");
+		_context.SaveChanges();
+
+		return BadRequest("Fora do período de check-in. Status de No Show registrado.");
 	}
 
-	// Método para registrar status de NO SHOW se o passageiro não embarcou
 	[HttpPost("{id}/registrarNoShow")]
 	public IActionResult RegistrarNoShow(int id)
 	{
-		var bilhete = _bilhete.FirstOrDefault(p => p.PassageiroIdPassageiro == id);
+		var bilhete = _context.Bilhetes.FirstOrDefault(b => b.PassagemIdPassagem == id);
 
 		if (bilhete == null)
-		{
-			return NotFound("Passagem não encontrada.");
-		}
+			return NotFound("Bilhete não encontrado.");
 
-		if (bilhete.StatusPassageiro != StatusPassagem.CheckInRealizado && bilhete.StatusPassageiro != StatusPassagem.EmbarqueRealizado)
-		{
-			bilhete.StatusPassageiro = StatusPassagem.NoShow;
-			return Ok("Status NO SHOW registrado.");
-		}
+		if (bilhete.StatusPassageiro == StatusPassagem.CheckInRealizado || bilhete.StatusPassageiro == StatusPassagem.EmbarqueRealizado)
+			return BadRequest("Passageiro já realizou check-in ou embarque.");
 
-			return BadRequest("Passageiro já realizou o embarque.");
+		bilhete.StatusPassageiro = StatusPassagem.NoShow;
+		_context.SaveChanges();
+
+		return Ok("Status NO SHOW registrado.");
 	}
+
+	[HttpPost("{id}/registrarEmbarque")]
+	public IActionResult RegistrarEmbarque(int id)
+	{
+		var bilhete = _context.Bilhetes
+				.Include(b => b.PassagemIdPassagemNavigation)
+				.FirstOrDefault(b => b.PassagemIdPassagem == id);
+
+		if (bilhete == null)
+			return NotFound("Bilhete não encontrado.");
+
+		if (bilhete.StatusPassageiro != StatusPassagem.CheckInRealizado)
+			return BadRequest("O passageiro não realizou o check-in.");
+
+		bilhete.StatusPassageiro = StatusPassagem.EmbarqueRealizado;
+		_context.SaveChanges();
+
+		return Ok("Embarque realizado com sucesso.");
+	}
+
 }

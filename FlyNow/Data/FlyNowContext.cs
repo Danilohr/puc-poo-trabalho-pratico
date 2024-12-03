@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using FlyNow.Controllers;
 using FlyNow.EfModels;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
@@ -54,6 +56,15 @@ public partial class FlyNowContext : DbContext
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
+		modelBuilder.Entity<Bilhete>()
+				.Property(b => b.StatusPassageiro)
+				.HasConversion(
+						v => GetEnumValue(v),  
+						v => MapStringToEnum(v.Trim())
+				);
+
+		base.OnModelCreating(modelBuilder);
+
 
 		modelBuilder.Entity<PassageiroVip>(entity =>
 		{
@@ -439,6 +450,29 @@ public partial class FlyNowContext : DbContext
 		});
 
 		OnModelCreatingPartial(modelBuilder);
+	}
+	private StatusPassagem MapStringToEnum(string status)
+	{
+		Console.WriteLine(status);
+		return status.Trim() switch
+		{
+			
+			"Passagem adquirida" => StatusPassagem.PassagemAdquirida,
+			"Passagem cancelada" => StatusPassagem.PassagemCancelada,
+			"Check-in realizado" => StatusPassagem.CheckInRealizado,
+			"Embarque realizado" => StatusPassagem.EmbarqueRealizado,
+			"NO SHOW" => StatusPassagem.NoShow,
+			_ => throw new ArgumentException($"Status desconhecido: {status}")
+		};
+	}
+	private string GetEnumValue(StatusPassagem status)
+	{
+		var enumType = typeof(StatusPassagem);
+		var enumName = Enum.GetName(enumType, status);
+		var memberInfo = enumType.GetMember(enumName)[0];
+		var enumMemberAttribute = memberInfo.GetCustomAttributes(typeof(EnumMemberAttribute), false).FirstOrDefault() as EnumMemberAttribute;
+		Console.WriteLine(status);
+		return enumMemberAttribute?.Value ?? status.ToString();
 	}
 
 	partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
