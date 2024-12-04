@@ -4,7 +4,7 @@ using FlyNow.EfModels;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
-namespace FlyNow.Data;
+namespace FlyNow.DTOs;
 
 public class AeroportoDto
 {
@@ -15,4 +15,8 @@ public class AeroportoDto
 	public string? Cidade { get; set; }
 
 	public string? Uf { get; set; }
+
+	public double Latitude { get; set; }
+
+	public double Longitude { get; set; }
 }

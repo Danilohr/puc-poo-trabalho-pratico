@@ -1,4 +1,5 @@
-﻿using FlyNow.Interfaces;
+﻿using FlyNow.Data;
+using FlyNow.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FlyNow.Controllers
@@ -7,6 +8,7 @@ namespace FlyNow.Controllers
 	{
 		internal readonly Data.FlyNowContext db;
 		protected readonly FlyNow.Interfaces.ILog logServico;
+		private FlyNowContext context;
 
 		public Base(Data.FlyNowContext context, ILog log)
 		{
@@ -17,6 +19,11 @@ namespace FlyNow.Controllers
 		{
 			db = new Data.FlyNowContext();
 			logServico = log;
+		}
+
+		public Base(FlyNowContext context)
+		{
+			this.context = context;
 		}
 	}
 }

@@ -1,5 +1,7 @@
 ﻿using FlyNow.Data;
+using FlyNow.DTOs;
 using FlyNow.EfModels;
+using FlyNow.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
@@ -11,9 +13,9 @@ namespace FlyNow.Controllers
 	[Route("api/[controller]")]
 	public class FuncionarioController : Base
 	{
-		public FuncionarioController(FlyNowContext context) : base(context)
-		{
-		}
+		private readonly ServicoPassagem passagemService;
+
+		public FuncionarioController() : base(new FlyNowContext(), new ServicoLog()) { passagemService = new ServicoPassagem(); }
 
 		[HttpPost("CadastrarFuncionario")]
 		public IActionResult CadastrarFuncionario([FromQuery] FuncionarioDto funcionarioDto)
@@ -148,6 +150,8 @@ namespace FlyNow.Controllers
 				return BadRequest("Nome é obrigatório.");
 			if (string.IsNullOrEmpty(aeroportoDto.Sigla))
 				return BadRequest("Sigla é obrigatório.");
+			if (aeroportoDto.Latitude == 0 || aeroportoDto.Longitude == 0)
+				return BadRequest("Latitude e Longitude são obrigatórios e devem ser diferentes de zero.");
 
 			var siglaExistente = db.Aeroportos.Any(a => a.Sigla == aeroportoDto.Sigla);
 			if (siglaExistente)
@@ -159,6 +163,8 @@ namespace FlyNow.Controllers
 				Cidade = aeroportoDto.Cidade,
 				Uf = aeroportoDto.Uf,
 				Sigla = aeroportoDto.Sigla,
+				Latitude = aeroportoDto.Latitude,
+				Longitude = aeroportoDto.Longitude
 			};
 
 			try
@@ -172,7 +178,62 @@ namespace FlyNow.Controllers
 				return BadRequest($"Erro ao cadastrar aeroporto: {ex.Message}");
 			}
 		}
-	}
 
+		[HttpPost("CadastrarPassagem")]
+		public IActionResult CadastrarPassagem([FromQuery] PassagemDto passagemDto)
+		{
+			if (string.IsNullOrEmpty(passagemDto.Moeda))
+				return BadRequest("A moeda é obrigatória.");
+
+			var tarifaExistente = db.Tarifas.Any(t => t.IdTarifa == passagemDto.TarifaIdTarifa);
+			if (!tarifaExistente)
+				return BadRequest("Não existe uma tarifa com esse ID.");
+
+			var vooExistente = db.Voos.Any(v => v.IdVoo == passagemDto.IdVoo1);
+			if (!vooExistente)
+				return BadRequest("Não existe um voo com esse ID.");
+
+			vooExistente = db.Voos.Any(v => v.IdVoo == passagemDto.IdVoo2);
+			if (!vooExistente)
+				return BadRequest("Não existe um voo com esse ID.");
+
+			var codExistente = db.Companhiaaereas.Any(c => c.Cod == passagemDto.CompanhiaAereaCod);
+			if (!codExistente)
+				return BadRequest("Não existe uma companhia aérea com esse código.");
+
+			if (!Enum.IsDefined(typeof(TipoPassagem), passagemDto.TipoPassagem))
+				return BadRequest("O tipo de passagem é inválido.");
+			
+			double valorPassagem = passagemDto.TipoPassagem switch
+			{
+				TipoPassagem.Basica => passagemService.calcularValorBasica(),
+				TipoPassagem.Business => passagemService.calcularValorBusiness(),
+				TipoPassagem.Premium => passagemService.calcularValorPremium(),
+				_ => throw new InvalidOperationException("Tipo de passagem inválido.")
+			};
+
+			var passagem = new Passagem
+			{
+				Moeda = passagemDto.Moeda,
+				TarifaIdTarifa = passagemDto.TarifaIdTarifa,
+				ValorbagagemId = passagemDto.ValorBagagemId,
+				IdVoo1 = passagemDto.IdVoo1,
+				IdVoo2 = passagemDto.IdVoo2,
+				CompanhiaAereaCod = passagemDto.CompanhiaAereaCod,
+				ValorPassagem = valorPassagem,
+			};
+
+			try
+			{
+				db.Passagems.Add(passagem);
+				db.SaveChanges();
+				return CreatedAtAction(nameof(CadastrarPassagem), new { id = passagem.IdPassagem }, passagem);
+			}
+			catch (Exception ex)
+			{
+				return BadRequest($"Erro ao cadastrar passagem: {ex.Message}");
+			}
+		}
+	}
 }
 

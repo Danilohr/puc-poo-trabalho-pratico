@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using FlyNow.Interfaces;
 using FlyNow.Services;
+using FlyNow.DTOs;
 
 namespace FlyNow.Controllers
 {
@@ -72,6 +73,43 @@ namespace FlyNow.Controllers
 			logServico.RegistrarLog($"Passageiro com ID {idPassageiro} tornado VIP na companhia {idCompanhia}.");
 
 			return Ok("Passageiro tornado VIP com sucesso.");
+		}
+
+		[HttpPost("CadastrarPssageiro")]
+		public IActionResult cadastrarPassageiro([FromQuery] PassageiroDto passageiroDto)
+		{
+			if (string.IsNullOrEmpty(passageiroDto.Nome))
+				return BadRequest("Nome é obrigatório.");
+			if (string.IsNullOrEmpty(passageiroDto.Cpf))
+				return BadRequest("Cpf é obrigatório.");
+			if (string.IsNullOrEmpty(passageiroDto.Email))
+				return BadRequest("Email é obrigatório.");
+			if (string.IsNullOrEmpty(passageiroDto.Rg))
+				return BadRequest("Rg é obrigatório.");
+
+			var usuarioExistente = db.Usuarios.Any(u => u.IdUsuario == passageiroDto.UsuarioIdUsuario);
+			if (!usuarioExistente)
+				return BadRequest("Id de usuário inválido.");
+
+			var passageiro = new Passageiro
+			{
+				Nome = passageiroDto.Nome,
+				Cpf = passageiroDto.Cpf,
+				Email = passageiroDto.Email,
+				Rg = passageiroDto.Rg,
+				UsuarioIdUsuario = passageiroDto.UsuarioIdUsuario,
+			};
+
+			try
+			{
+				db.Passageiros.Add(passageiro);
+				db.SaveChanges();
+				return CreatedAtAction(nameof(cadastrarPassageiro), new { id = passageiro.IdPassageiro }, passageiro);
+			}
+			catch (Exception ex)
+			{
+				return BadRequest($"Erro ao cadastrar passageiro: {ex.Message}");
+			}
 		}
 	}
 }

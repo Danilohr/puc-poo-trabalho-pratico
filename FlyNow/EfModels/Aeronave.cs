@@ -7,6 +7,8 @@ public partial class Aeronave
 {
     public int IdAeronave { get; set; }
 
+		public string? Nome { get; set; }
+
     public int CapacidadePassageiros { get; set; }
 
     public int CapacidadeBagagens { get; set; }

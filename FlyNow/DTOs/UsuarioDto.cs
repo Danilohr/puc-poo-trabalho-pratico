@@ -4,7 +4,7 @@ using FlyNow.EfModels;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
-namespace FlyNow.Data;
+namespace FlyNow.DTOs;
 
 public class UsuarioDto
 {
