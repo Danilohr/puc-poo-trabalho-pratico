@@ -4,7 +4,6 @@ using System.Runtime.Serialization;
 using FlyNow.Controllers;
 using FlyNow.EfModels;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
 namespace FlyNow.Data;
 
@@ -23,7 +22,7 @@ public partial class FlyNowContext : DbContext
 
 	public virtual DbSet<Aeroporto> Aeroportos { get; set; }
 
-	public virtual DbSet<Agencium> Agencia { get; set; }
+	public virtual DbSet<Agencia> Agencia { get; set; }
 
 	public virtual DbSet<Assento> Assentos { get; set; }
 
@@ -31,7 +30,7 @@ public partial class FlyNowContext : DbContext
 
 	public virtual DbSet<CompanhiaAerea> Companhiaaereas { get; set; }
 
-	public virtual DbSet<CompanhiaaereaHasAgencium> CompanhiaaereaHasAgencia { get; set; }
+	public virtual DbSet<CompanhiaaereaHasAgencia> CompanhiaaereaHasAgencia { get; set; }
 
 	public virtual DbSet<Funcionario> Funcionarios { get; set; }
 
@@ -122,7 +121,7 @@ public partial class FlyNowContext : DbContext
 							.HasColumnName("uf");
 		});
 
-		modelBuilder.Entity<Agencium>(entity =>
+		modelBuilder.Entity<Agencia>(entity =>
 		{
 			entity.HasKey(e => new { e.IdAgencia, e.FuncionarioIdFuncionario })
 							.HasName("PRIMARY")
@@ -139,7 +138,7 @@ public partial class FlyNowContext : DbContext
 							.HasColumnName("nome");
 			entity.Property(e => e.TaxaAgencia).HasColumnName("taxaAgencia");
 
-			entity.HasOne(d => d.FuncionarioIdFuncionarioNavigation).WithMany(p => p.Agencia)
+			entity.HasOne(d => d.Funcionario).WithMany(p => p.Agencia)
 							.HasForeignKey(d => d.FuncionarioIdFuncionario)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_agencia_funcionario1");
@@ -168,7 +167,7 @@ public partial class FlyNowContext : DbContext
 							.HasDefaultValueSql("'0'")
 							.HasColumnName("ocupado");
 
-			entity.HasOne(d => d.AeronaveIdAeronaveNavigation).WithMany(p => p.Assentos)
+			entity.HasOne(d => d.Aeronave).WithMany(p => p.Assentos)
 							.HasForeignKey(d => d.AeronaveIdAeronave)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_assento_aeronave1");
@@ -192,12 +191,12 @@ public partial class FlyNowContext : DbContext
 							.HasColumnType("enum('Passagem adquirida','Passagem cancelada','Check-in realizado','Embarque realizado','NO SHOW')")
 							.HasColumnName("statusPassageiro");
 
-			entity.HasOne(d => d.PassageiroIdPassageiroNavigation).WithMany(p => p.Bilhetes)
+			entity.HasOne(d => d.Passageiro).WithMany(p => p.Bilhetes)
 							.HasForeignKey(d => d.PassageiroIdPassageiro)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_bilhete_passageiro1");
 
-			entity.HasOne(d => d.PassagemIdPassagemNavigation).WithMany(p => p.Bilhetes)
+			entity.HasOne(d => d.Passagem).WithMany(p => p.Bilhetes)
 							.HasForeignKey(d => d.PassagemIdPassagem)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_bilhete_passagem1");
@@ -222,7 +221,7 @@ public partial class FlyNowContext : DbContext
 			entity.Property(e => e.TaxaRemuneracao).HasColumnName("taxaRemuneracao");
 		});
 
-		modelBuilder.Entity<CompanhiaaereaHasAgencium>(entity =>
+		modelBuilder.Entity<CompanhiaaereaHasAgencia>(entity =>
 		{
 			entity.HasKey(e => new { e.AgenciaIdAgencia, e.CompanhiaaereaCod })
 							.HasName("PRIMARY")
@@ -314,16 +313,16 @@ public partial class FlyNowContext : DbContext
 			entity.Property(e => e.TarifaIdTarifa).HasColumnName("tarifa_idTarifa");
 			entity.Property(e => e.ValorbagagemId).HasColumnName("valorbagagem_id");
 
-			entity.HasOne(d => d.IdVoo1Navigation).WithOne(p => p.PassagemIdVoo1Navigation)
+			entity.HasOne(d => d.Voo1).WithOne(p => p.Passagem)
 							.HasForeignKey<Passagem>(d => d.IdVoo1)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_passagem_voo1");
 
-			entity.HasOne(d => d.IdVoo2Navigation).WithMany(p => p.PassagemIdVoo2Navigations)
+			entity.HasOne(d => d.Voo2).WithMany(p => p.PassagensVoo)
 							.HasForeignKey(d => d.IdVoo2)
 							.HasConstraintName("fk_passagem_voo2");
 
-			entity.HasOne(d => d.TarifaIdTarifaNavigation).WithMany(p => p.Passagems)
+			entity.HasOne(d => d.Tarifa).WithMany(p => p.Passagems)
 							.HasForeignKey(d => d.TarifaIdTarifa)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_passagem_tarifa1");
@@ -428,7 +427,7 @@ public partial class FlyNowContext : DbContext
 			entity.Property(e => e.IdAeroportoDestino).HasColumnName("idAeroportoDestino");
 			entity.Property(e => e.IdAeroportoOrigem).HasColumnName("idAeroportoOrigem");
 
-			entity.HasOne(d => d.AeronaveIdAeronaveNavigation).WithMany(p => p.Voos)
+			entity.HasOne(d => d.AeronaveVoo).WithMany(p => p.Voos)
 							.HasForeignKey(d => d.AeronaveIdAeronave)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_voo_aeronave1");
@@ -443,7 +442,7 @@ public partial class FlyNowContext : DbContext
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_voo_aeroporto2");
 
-			entity.HasOne(d => d.IdAeroportoOrigemNavigation).WithMany(p => p.VooIdAeroportoOrigemNavigations)
+			entity.HasOne(d => d.Aeroporto).WithMany(p => p.VooIdAeroportoOrigemNavigations)
 							.HasForeignKey(d => d.IdAeroportoOrigem)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_voo_aeroporto1");

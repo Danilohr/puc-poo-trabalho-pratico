@@ -1,11 +1,22 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using FlyNow.Data;
 using System.Configuration;
+using FlyNow.Interfaces;
+using FlyNow.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.Services.AddScoped<ILog, ServicoLog>();// Adiciona serviços de log
+
 builder.Services.AddControllers();
+
+builder.Services.AddControllers()
+		.AddJsonOptions(options =>
+		{
+			options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+		});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -15,5 +15,5 @@ public partial class Assento
 
     public sbyte? Ocupado { get; set; }
 
-    public virtual Aeronave AeronaveIdAeronaveNavigation { get; set; } = null!;
+    public virtual Aeronave Aeronave { get; set; } = null!;
 }

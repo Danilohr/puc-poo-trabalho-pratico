@@ -17,13 +17,17 @@ public partial class Passagem
 
     public int? IdVoo2 { get; set; }
 
-    public virtual ICollection<Bilhete> Bilhetes { get; set; } = new List<Bilhete>();
+		public double? ValorPassagem { get; set; }
 
-    public virtual Voo IdVoo1Navigation { get; set; } = null!;
+		public int CompanhiaAereaCod { get; set; }
 
-    public virtual Voo? IdVoo2Navigation { get; set; }
+		public virtual ICollection<Bilhete> Bilhetes { get; set; } = new List<Bilhete>();
 
-    public virtual Tarifa TarifaIdTarifaNavigation { get; set; } = null!;
+    public virtual Voo Voo1 { get; set; } = null!;
+
+    public virtual Voo? Voo2 { get; set; }
+
+    public virtual Tarifa Tarifa { get; set; } = null!;
 
     public virtual Valorbagagem Valorbagagem { get; set; } = null!;
 }
