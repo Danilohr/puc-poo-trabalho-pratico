@@ -1,28 +1,24 @@
 ﻿using FlyNow.Data;
 using FlyNow.EfModels;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
+using FlyNow.Interfaces;
+using FlyNow.Services;
 
 namespace FlyNow.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
-	public class PassageiroVipController : ControllerBase
+	public class PassageiroVipController : Base
 	{
-		private readonly FlyNowContext _context;
-
-		public PassageiroVipController(FlyNowContext context)
-		{
-			_context = context;
-		}
+		public PassageiroVipController() : base(new FlyNowContext(), new ServicoLog()) { }
+		public PassageiroVipController(FlyNowContext db) : base(db, new ServicoLog()) { }
 
 		// Método para alterar o status do bilhete sem custo adicional para VIPs
 		[HttpPost("AlterarStatusBilhete")]
-		public IActionResult AlterarStatusBilhete(int idPassageiro, int idPassagem, StatusPassagem novoStatus)
+		public IActionResult AlterarStatusBilhete(int idPassageiro, int idPassagem, string novoStatusPassagem)
 		{
 			// Verifica se o passageiro é VIP
-			bool isVip = _context.PassageiroVIPs.Any(pv => pv.PassageiroIdPassageiro == idPassageiro);
+			bool isVip = db.PassageiroVIPs.Any(pv => pv.PassageiroIdPassageiro == idPassageiro);
 
 			if (!isVip)
 			{
@@ -30,24 +26,25 @@ namespace FlyNow.Controllers
 			}
 
 			// Busca o bilhete e a passagem associada para atualizar o status
-			var bilhete = _context.Bilhetes.FirstOrDefault(b => b.PassagemIdPassagem == idPassagem && b.PassageiroIdPassageiro == idPassageiro);
+			var bilhete = db.Bilhetes.FirstOrDefault(b => b.PassagemIdPassagem == idPassagem && b.PassageiroIdPassageiro == idPassageiro);
 			if (bilhete == null)
 			{
 				return NotFound("Bilhete não encontrado para o passageiro especificado.");
 			}
 
 			// Atualiza o status do bilhete
-			bilhete.StatusPassageiro = novoStatus;
+			bilhete.StatusPassageiro = novoStatusPassagem;
 
 			try
 			{
-				_context.SaveChanges();
+				db.SaveChanges();
 			}
 			catch (Exception ex)
 			{
 				return BadRequest($"Erro ao alterar o status do bilhete: {ex.Message}");
 			}
 
+			logServico.RegistrarLog($"Passagem {idPassagem} do passageiro {idPassageiro} cancelada sem custo.");
 			return Ok("Status do bilhete alterado com sucesso sem custo adicional para passageiro VIP.");
 		}
 
@@ -56,7 +53,7 @@ namespace FlyNow.Controllers
 		public IActionResult CalcularCustoBagagem(int idPassageiro, int quantidadeBagagens)
 		{
 			// Verifica se o passageiro é VIP
-			bool isVip = _context.PassageiroVIPs.Any(pv => pv.PassageiroIdPassageiro == idPassageiro);
+			bool isVip = db.PassageiroVIPs.Any(pv => pv.PassageiroIdPassageiro == idPassageiro);
 			decimal custoPorBagagem = 100; // Exemplo de custo padrão por bagagem
 			decimal custoTotal = 0;
 
@@ -78,7 +75,9 @@ namespace FlyNow.Controllers
 				custoTotal = quantidadeBagagens * custoPorBagagem;
 			}
 
+			logServico.RegistrarLog($"Cálculo de custo de bagagem realizado para passageiro {idPassageiro}, quantidade de bagagens: {quantidadeBagagens}.");
 			return Ok(new { CustoTotal = custoTotal });
+
 		}
 
 		// Método para cancelar a passagem sem custo adicional para VIPs
@@ -86,7 +85,7 @@ namespace FlyNow.Controllers
 		public IActionResult CancelarPassagemSemCusto(int idPassageiro, int idPassagem)
 		{
 			// Verifica se o passageiro é VIP
-			bool isVip = _context.PassageiroVIPs.Any(pv => pv.PassageiroIdPassageiro == idPassageiro);
+			bool isVip = db.PassageiroVIPs.Any(pv => pv.PassageiroIdPassageiro == idPassageiro);
 
 			if (!isVip)
 			{
@@ -94,26 +93,27 @@ namespace FlyNow.Controllers
 			}
 
 			// Busca a passagem e o bilhete associados e remove a passagem
-			var passagem = _context.Passagems.FirstOrDefault(p => p.IdPassagem == idPassagem);
-			var bilhete = _context.Bilhetes.FirstOrDefault(b => b.PassagemIdPassagem == idPassagem && b.PassageiroIdPassageiro == idPassageiro);
+			var passagem = db.Passagems.FirstOrDefault(p => p.IdPassagem == idPassagem);
+			var bilhete = db.Bilhetes.FirstOrDefault(b => b.PassagemIdPassagem == idPassagem && b.PassageiroIdPassageiro == idPassageiro);
 
 			if (passagem == null || bilhete == null)
 			{
 				return NotFound("Passagem ou bilhete não encontrados para o passageiro especificado.");
 			}
 
-			_context.Bilhetes.Remove(bilhete);
-			_context.Passagems.Remove(passagem);
+			db.Bilhetes.Remove(bilhete);
+			db.Passagems.Remove(passagem);
 
 			try
 			{
-				_context.SaveChanges();
+				db.SaveChanges();
 			}
 			catch (Exception ex)
 			{
 				return BadRequest($"Erro ao cancelar a passagem: {ex.Message}");
 			}
 
+			logServico.RegistrarLog($"Passagem {idPassagem} do passageiro {idPassageiro} cancelada sem custo.");
 			return Ok("Passagem cancelada com sucesso sem custo adicional para passageiro VIP.");
 		}
 	}

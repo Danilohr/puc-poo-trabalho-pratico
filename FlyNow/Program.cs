@@ -1,9 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using FlyNow.Data;
 using System.Configuration;
+using FlyNow.Interfaces;
+using FlyNow.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddScoped<ILog, ServicoLog>();// Adiciona serviços de log
 
 builder.Services.AddControllers();
 

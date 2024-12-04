@@ -3,6 +3,8 @@ using FlyNow.EfModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
+using FlyNow.Interfaces;
+using FlyNow.Services;
 
 namespace FlyNow.Controllers
 {
@@ -10,10 +12,8 @@ namespace FlyNow.Controllers
 	[Route("api/[controller]")]
 	public class VooController : Base
 	{
-
-		public VooController(FlyNowContext context) : base(context)
-		{
-		}
+		public VooController() : base (new FlyNowContext(), new ServicoLog()) {}
+		public VooController(FlyNowContext db) : base (db, new ServicoLog()) { }
 
 		[HttpGet]
 		public IActionResult Get()
@@ -33,11 +33,12 @@ namespace FlyNow.Controllers
 			{
 				db.SaveChanges();
 			}
-			catch (Exception ex) {
+			catch (Exception ex)
+			{
 				return BadRequest(ex.Message);
 			}
-
-			return Ok();
+			logServico.RegistrarLog($"Novo voo criado: Código {voo.CodVoo}, Data {voo.Data}.");
+			return Ok("Voo criado com sucesso.");
 		}
 
 		[HttpGet("GetHistorico")]
@@ -59,6 +60,7 @@ namespace FlyNow.Controllers
 					.OrderBy(v => v.Data) // Ordena por data do voo
 					.ToList();
 
+			logServico.RegistrarLog($"Consulta de histórico de voos para passageiro {idPassageiro}.");
 			return Ok(listaDeVoos);
 		}
 
@@ -67,9 +69,20 @@ namespace FlyNow.Controllers
 		{
 			var lista = db.Voos.Where(i => i.EhInternacional == 1);
 
+			logServico.RegistrarLog("Consulta de voos internacionais realizada.");
 			return Ok(lista);
+		}
+
+
+		[HttpGet("buscar-voo")]
+		public IActionResult GetVoo([FromQuery] int idAeroOrigem, [FromQuery] int idAeroDestino, [FromQuery] DateTime data)
+		{
+			var voo = db.Voos
+				.Where(v => v.IdAeroportoOrigem == idAeroOrigem && v.IdAeroportoDestino == idAeroDestino && v.Data == data)
+				.ToList();
+
+			return Ok(voo);
 		}
 	}
 
 }
-
