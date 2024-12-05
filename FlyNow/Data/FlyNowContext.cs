@@ -191,12 +191,12 @@ public partial class FlyNowContext : DbContext
 							.HasColumnType("enum('Passagem adquirida','Passagem cancelada','Check-in realizado','Embarque realizado','NO SHOW')")
 							.HasColumnName("statusPassageiro");
 
-			entity.HasOne(d => d.Passageiro).WithMany(p => p.Bilhetes)
+			entity.HasOne(d => d.PassagemIdPassagemNavigation).WithMany(p => p.Bilhetes)
 							.HasForeignKey(d => d.PassageiroIdPassageiro)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_bilhete_passageiro1");
 
-			entity.HasOne(d => d.Passagem).WithMany(p => p.Bilhetes)
+			entity.HasOne(d => d.PassageiroIdPassageiroNavigation).WithMany(p => p.Bilhetes)
 							.HasForeignKey(d => d.PassagemIdPassagem)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_bilhete_passagem1");

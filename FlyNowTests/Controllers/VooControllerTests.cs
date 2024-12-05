@@ -9,6 +9,7 @@ using FlyNow.EfModels;
 using FlyNow.Services;
 using FlyNow.Data;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Tests
 {
@@ -181,7 +182,68 @@ namespace Tests
 				Assert.IsInstanceOfType(result, CartaoDeEmbarque);
 
 				transaction.Rollback();
+			} 
+		}
+
+		[TestMethod()]
+		public void Cenario2()
+		{
+			context = new FlyNowContext();
+			PassagemController passagemController = new PassagemController(context);
+			VooController vooController = new VooController(context);
+			BilhetesController bilhetesController = new BilhetesController(context);
+
+			using (var transaction = context.Database.BeginTransaction())
+			{
+				// Teste 1: Buscar voos com conexão em uma data específica
+				var buscaVoos = vooController.GetVoos(
+						idAeroOrigem: 1,
+						idAeroDestino: 2,
+						dataIda: new DateTime(2024, 12, 15),
+						dataVolta: new DateTime(2024, 01, 02)
+				);
+				Assert.IsInstanceOfType(buscaVoos, typeof(OkObjectResult));
+				var voosEncontrados = (buscaVoos as OkObjectResult)?.Value as List<Voo>;
+				Assert.IsNotNull(voosEncontrados);
+				Assert.IsTrue(voosEncontrados.Count > 0);
+
+				// Teste 2: Adquirir uma passagem para um passageiro VIP
+				var passageiroVip = new Passageiro
+				{
+					IdPassageiro = 1,
+					Nome = "Passageiro VIP",
+					Cpf = "123.456.789.21",
+					Email = "passageiroVip.Email.com",
+					Rg = "mg-12346432",
+					UsuarioIdUsuario = 1
+				};
+				context.Passageiros.Add(passageiroVip);
+				context.SaveChanges();
+
+				var passagem = passagemController.AdquirirPassagem(new Passagem
+				{
+					IdVoo1 = voosEncontrados[0].IdVoo,
+					IdVoo2 = voosEncontrados[1].IdVoo,
+					ValorPassagem = 500, // Exemplo de valor
+					Moeda = "BRL",
+					CompanhiaAereaCod = voosEncontrados[0].CompanhiaaereaCod
+				});
+				Assert.IsInstanceOfType(passagem, typeof(OkObjectResult));
+
+				// Teste 3: Solicitar franquia de bagagem sem custo
+				var bagagem = passagemController.SolicitarFranquiaBagagem(passageiroVip.IdPassageiro);
+				Assert.IsInstanceOfType(bagagem, typeof(OkObjectResult));
+
+				// Teste 4: Cancelar um dos voos e verificar impacto na passagem
+				var cancelamento = vooController.CancelarVoo(voosEncontrados[0].IdVoo);
+				Assert.IsInstanceOfType(cancelamento, typeof(OkObjectResult));
+
+				var statusPassagem = bilhetesController.VerificarStatusPassagem(passageiroVip.IdPassageiro);
+				Assert.AreEqual("Cancelada", statusPassagem);
+
+				transaction.Rollback();
 			}
 		}
+
 	}
 }

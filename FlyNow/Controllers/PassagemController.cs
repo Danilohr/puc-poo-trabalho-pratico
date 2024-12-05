@@ -20,4 +20,5 @@ public class PassagemController : Base
 		logServico.RegistrarLog("Consulta realizada para listar todas as passagens.");
 		return await db.Passagems.ToListAsync();
 	}
+
 }

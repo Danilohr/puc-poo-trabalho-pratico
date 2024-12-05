@@ -48,8 +48,8 @@ namespace FlyNow.Controllers
 				.Where(b => b.PassageiroIdPassageiro == idPassageiro)
 				.Select(b => new
 				{
-					Voo1 = b.Passagem.Voo1,
-					Voo2 = b.Passagem.Voo2
+					Voo1 = b.PassagemIdPassagemNavigation.Voo1,
+					Voo2 = b.PassagemIdPassagemNavigation.Voo2
 				})
 				.ToList();
 

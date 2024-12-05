@@ -50,7 +50,7 @@ public class BilhetesController : ControllerBase
 		var horaAtual = DateTime.Now;
 
 		// Verifica se está dentro do período permitido
-		if (horaAtual >= voo.Data.AddHours(-48) && horaAtual <= voo.Data.AddMinutes(-30))
+		if (horaAtual >= voo.Data.AddHours(48) && horaAtual <= voo.Data.AddMinutes(30))
 		{
 			foreach (var bilhete in passagem.Bilhetes)
 			{
@@ -118,6 +118,38 @@ public class BilhetesController : ControllerBase
 		_context.SaveChanges();
 
 		return Ok("Embarque realizado com sucesso.");
+	}
+
+	[HttpGet]
+	[Route("api/bilhete/verificar-status/{idPassagem}")]
+	public IActionResult VerificarStatusPassagem(int idPassagem)
+	{
+		try
+		{
+			// Buscar o bilhete no banco de dados com base no id da passagem
+			var bilhete = _context.Bilhetes
+					.Where(b => b.PassagemIdPassagem == idPassagem)
+					.Select(b => new
+					{
+						b.StatusPassageiro,  // O status da passagem
+						b.PassagemIdPassagem,
+						b.PassageiroIdPassageiro
+					})
+					.FirstOrDefault();
+
+			if (bilhete == null)
+				return NotFound("Nenhum bilhete encontrado para a passagem informada.");
+
+			return Ok(new
+			{
+				Mensagem = "Status encontrado com sucesso.",
+				Bilhete = bilhete
+			});
+		}
+		catch (Exception ex)
+		{
+			return StatusCode(500, $"Erro ao verificar o status do bilhete: {ex.Message}");
+		}
 	}
 
 }
