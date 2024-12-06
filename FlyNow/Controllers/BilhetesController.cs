@@ -1,8 +1,6 @@
 ﻿using FlyNow.Controllers;
 using FlyNow.Data;
 using FlyNow.EfModels;
-using FlyNow.Interfaces;
-using FlyNow.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -10,69 +8,148 @@ using System.Threading.Tasks;
 
 [ApiController]
 [Route("api/[controller]")]
-public class BilhetesController : Base
+public class BilhetesController : ControllerBase
 {
-	public BilhetesController() : base(new FlyNowContext(), new ServicoLog()) {	}
-	public BilhetesController(FlyNowContext context) : base(context, new ServicoLog()) { }
+	private readonly FlyNowContext _context;
+
+	public BilhetesController(FlyNowContext context)
+	{
+		_context = context;
+	}
 
 	// GET: api/Bilhetes
 	[HttpGet]
 	public async Task<ActionResult<IEnumerable<Bilhete>>> GetBilhetes()
 	{
-		return await db.Bilhetes
-				.Include(b => b.Passageiro) // Inclui dados do Passageiro relacionado
-				.Include(b => b.Passagem)   // Inclui dados da Passagem relacionada
+		return await _context.Bilhetes
+				.Include(b => b.PassageiroIdPassageiroNavigation) // Inclui dados do Passageiro relacionado
+				.Include(b => b.PassagemIdPassagemNavigation)   // Inclui dados da Passagem relacionada
 				.ToListAsync();
 	}
 
+	private static List<Voo> _Voo = new List<Voo>();
+	private static List<Bilhete> _bilhete = new List<Bilhete>();
+	private static StatusPassagem StatusPassagem;
+
 	// Método para realizar o check-in
-	private List<Voo> _Voo = new List<Voo>();
-
-	[HttpPost("{id}/checkin")]
-	public IActionResult RealizarCheckIn(int idBilhete)
+	[HttpPost("{id}/realizarCheckIn")]
+	public IActionResult RealizarCheckIn(int id)
 	{
-		var bilhete = base.db.Bilhetes.FirstOrDefault(p => p.PassagemIdPassagem == idBilhete);
-		var Voo = base.db.Voos.FirstOrDefault(v => v.IdVoo == db.Passagems.FirstOrDefault(p => p.IdPassagem == bilhete.PassagemIdPassagem).Voo1.IdVoo);
-		if (Voo == null) return NotFound("Passagem não encontrada.");
+		var passagem = _context.Passagems
+				.Include(p => p.Bilhetes)
+				.FirstOrDefault(p => p.IdPassagem == id);
 
-		var agora = DateTime.Now;
+		if (passagem == null)
+			return NotFound("Passagem não encontrada.");
 
-		var periodoInicio = Voo.Data.AddHours(-48);
-		var periodoFim = Voo.Data.AddMinutes(-30);
+		var voo = _context.Voos.FirstOrDefault(v => v.IdVoo == passagem.IdVoo1);
 
-		if (agora < periodoInicio || agora > periodoFim)
+		if (voo == null)
+			return NotFound("Voo não encontrado.");
+
+		var horaAtual = DateTime.Now;
+
+		// Verifica se está dentro do período permitido
+		if (horaAtual >= voo.Data.AddHours(48) && horaAtual <= voo.Data.AddMinutes(30))
 		{
-			return BadRequest("Check-in fora do período permitido.");
+			foreach (var bilhete in passagem.Bilhetes)
+			{
+				bilhete.StatusPassageiro = StatusPassagem.CheckInRealizado;
+				_context.SaveChanges();
+			}
+
+			// Gerar cartão de embarque
+			var cartaoEmbarque = new
+			{
+				NomePassageiro = passagem.Bilhetes.First().PassageiroIdPassageiroNavigation.Nome,
+				CodigoVoo = voo.CodVoo,
+				HorarioEmbarque = voo.Data.AddMinutes(-30),
+				Assento = "A definir" // Pode ser integrado com a lógica de assentos, não olhei como fazer isso.
+			};
+
+			return Ok(new { Mensagem = "Check-in realizado com sucesso.", CartaoEmbarque = cartaoEmbarque });
 		}
 
-		bilhete.StatusPassageiro = StatusPassagem.EmbarqueRealizado;
-		base.db.SaveChanges();
+		foreach (var bilhete in passagem.Bilhetes)
+		{
+			// Verifica se o status do passageiro ainda não foi atualizado para "CheckInRealizado"
+			if (bilhete.StatusPassageiro != StatusPassagem.CheckInRealizado)
+			{
+				bilhete.StatusPassageiro = StatusPassagem.NoShow;
+			}
+		}
 
-		logServico.RegistrarLog($"Check-in realizado para o bilhete com ID {idBilhete}.");
+		_context.SaveChanges();
 
-		return Ok("Check-in realizado com sucesso.");
+		return BadRequest("Fora do período de check-in. Status de No Show registrado.");
 	}
 
-	// Método para registrar status de NO SHOW se o passageiro não embarcou
 	[HttpPost("{id}/registrarNoShow")]
 	public IActionResult RegistrarNoShow(int id)
 	{
-		var bilhete = base.db.Bilhetes.FirstOrDefault(p => p.PassageiroIdPassageiro == id);
+		var bilhete = _context.Bilhetes.FirstOrDefault(b => b.PassagemIdPassagem == id);
 
 		if (bilhete == null)
-		{
-			return NotFound("Passagem não encontrada.");
-		}
+			return NotFound("Bilhete não encontrado.");
 
-		if (bilhete.StatusPassageiro != StatusPassagem.CheckInRealizado && bilhete.StatusPassageiro != StatusPassagem.EmbarqueRealizado)
-		{
-			bilhete.StatusPassageiro = StatusPassagem.NoShow;
+		if (bilhete.StatusPassageiro == StatusPassagem.CheckInRealizado || bilhete.StatusPassageiro == StatusPassagem.EmbarqueRealizado)
+			return BadRequest("Passageiro já realizou check-in ou embarque.");
 
-			logServico.RegistrarLog($"No Show registrado para o bilhete com ID {id}.");
+		bilhete.StatusPassageiro = StatusPassagem.NoShow;
+		_context.SaveChanges();
 
-			return Ok("Status NO SHOW registrado.");
-		}
-
-		return BadRequest("Passageiro já realizou o embarque.");
+		return Ok("Status NO SHOW registrado.");
 	}
+
+	[HttpPost("{id}/registrarEmbarque")]
+	public IActionResult RegistrarEmbarque(int id)
+	{
+		var bilhete = _context.Bilhetes
+				.Include(b => b.PassagemIdPassagemNavigation)
+				.FirstOrDefault(b => b.PassagemIdPassagem == id);
+
+		if (bilhete == null)
+			return NotFound("Bilhete não encontrado.");
+
+		if (bilhete.StatusPassageiro != StatusPassagem.CheckInRealizado)
+			return BadRequest("O passageiro não realizou o check-in.");
+
+		bilhete.StatusPassageiro = StatusPassagem.EmbarqueRealizado;
+		_context.SaveChanges();
+
+		return Ok("Embarque realizado com sucesso.");
+	}
+
+	[HttpGet]
+	[Route("api/bilhete/verificar-status/{idPassagem}")]
+	public IActionResult VerificarStatusPassagem(int idPassagem)
+	{
+		try
+		{
+			// Buscar o bilhete no banco de dados com base no id da passagem
+			var bilhete = _context.Bilhetes
+					.Where(b => b.PassagemIdPassagem == idPassagem)
+					.Select(b => new
+					{
+						b.StatusPassageiro,  // O status da passagem
+						b.PassagemIdPassagem,
+						b.PassageiroIdPassageiro
+					})
+					.FirstOrDefault();
+
+			if (bilhete == null)
+				return NotFound("Nenhum bilhete encontrado para a passagem informada.");
+
+			return Ok(new
+			{
+				Mensagem = "Status encontrado com sucesso.",
+				Bilhete = bilhete
+			});
+		}
+		catch (Exception ex)
+		{
+			return StatusCode(500, $"Erro ao verificar o status do bilhete: {ex.Message}");
+		}
+	}
+
 }
