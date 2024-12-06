@@ -15,9 +15,10 @@ public partial class Aeroporto
 
   public string? Uf { get; set; }
 
-	public double Latitude { get; set; }
-		
-	public double Longitude { get; set; }
+	public float Latitude { get; set; }
+
+	public float Longitude { get; set; }
+
 
 	public virtual ICollection<Voo> VooIdAeroportoDestinoNavigations { get; set; } = new List<Voo>();
 

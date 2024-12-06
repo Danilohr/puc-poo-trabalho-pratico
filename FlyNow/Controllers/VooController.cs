@@ -12,8 +12,9 @@ namespace FlyNow.Controllers
 	[Route("api/[controller]")]
 	public class VooController : Base
 	{
-		public VooController() : base (new FlyNowContext(), new ServicoLog()) {}
-		public VooController(FlyNowContext db) : base (db, new ServicoLog()) { }
+		public VooController() : base(new FlyNowContext(), new ServicoLog()) { }
+		public VooController(FlyNowContext db) : base(db, new ServicoLog()) { }
+
 
 		[HttpGet]
 		public IActionResult Get()
@@ -153,6 +154,36 @@ namespace FlyNow.Controllers
 			return Ok(resultado);
 		}
 
-	}
+		private float CalculaDistanciaKm(float lat1, float long1, float lat2, float long2)
+		{
+			return 110.57f * MathF.Sqrt(MathF.Pow(lat2 - lat1, 2) + MathF.Pow(long2 - long1, 2));
+		}
 
+		private void AtualizarDuracaoEHorario(Voo voo)
+		{
+			var aeroportoOrigem = db.Aeroportos.Find(voo.IdAeroportoOrigem);
+			var aeroportoDestino = db.Aeroportos.Find(voo.IdAeroportoDestino);
+
+			if (aeroportoOrigem == null || aeroportoDestino == null)
+				throw new Exception("Aeroporto de origem ou destino não encontrado.");
+
+			float distanciaKm = CalculaDistanciaKm(
+					aeroportoOrigem.Latitude,
+					aeroportoOrigem.Longitude,
+					aeroportoDestino.Latitude,
+					aeroportoDestino.Longitude
+			);
+
+			if (voo.VelocidadeMedia <= 0)
+				throw new Exception("Velocidade média da aeronave deve ser maior que zero.");
+
+			float duracaoHoras = distanciaKm / voo.VelocidadeMedia;
+
+			voo.Duracao = TimeOnly.FromTimeSpan(TimeSpan.FromHours(duracaoHoras));
+			voo.HorarioPrevistoChegada = voo.Data.AddHours(duracaoHoras);
+
+
+		}
+
+	}
 }

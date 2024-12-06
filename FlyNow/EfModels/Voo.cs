@@ -21,9 +21,14 @@ public partial class Voo
 
     public int IdAeroportoOrigem { get; set; }
 
-    public int IdAeroportoDestino { get; set; }
+	public int IdAeroportoDestino { get; set; }
 
-    public virtual Aeronave AeronaveVoo { get; set; } = null!;
+	public float VelocidadeMedia { get; set; }
+
+	public DateTime HorarioPrevistoChegada { get; set; }
+
+
+	public virtual Aeronave AeronaveVoo { get; set; } = null!;
 
     public virtual CompanhiaAerea CompanhiaaereaCodNavigation { get; set; } = null!;
 
