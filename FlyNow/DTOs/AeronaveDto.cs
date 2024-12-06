@@ -13,4 +13,8 @@ public class AeronaveDto
 	public int CapacidadePassageiros { get; set; }
 	
 	public int CapacidadeBagagens { get; set; }
+
+	public int NumeroFileiras { get; set; }
+	
+	public int AssentosPorFileira { get; set; } = 6;
 }

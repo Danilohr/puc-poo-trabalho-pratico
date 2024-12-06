@@ -182,45 +182,59 @@ namespace FlyNow.Controllers
 		[HttpPost("CadastrarPassagem")]
 		public IActionResult CadastrarPassagem([FromQuery] PassagemDto passagemDto)
 		{
-			if (string.IsNullOrEmpty(passagemDto.Moeda))
-				return BadRequest("A moeda é obrigatória.");
+			var voo1 = db.Voos.FirstOrDefault(v => v.IdVoo == passagemDto.IdVoo1);
+			if (voo1 == null)
+				return BadRequest("Não existe um voo com o ID fornecido para Voo1.");
 
-			var tarifaExistente = db.Tarifas.Any(t => t.IdTarifa == passagemDto.TarifaIdTarifa);
-			if (!tarifaExistente)
-				return BadRequest("Não existe uma tarifa com esse ID.");
+			var voo2 = passagemDto.IdVoo2 != 0
+																									? db.Voos.FirstOrDefault(v => v.IdVoo == passagemDto.IdVoo2)
+																									: null;
 
-			var vooExistente = db.Voos.Any(v => v.IdVoo == passagemDto.IdVoo1);
-			if (!vooExistente)
-				return BadRequest("Não existe um voo com esse ID.");
-
-			vooExistente = db.Voos.Any(v => v.IdVoo == passagemDto.IdVoo2);
-			if (!vooExistente)
-				return BadRequest("Não existe um voo com esse ID.");
-
-			var codExistente = db.Companhiaaereas.Any(c => c.Cod == passagemDto.CompanhiaAereaCod);
-			if (!codExistente)
+			var companhia = db.Companhiaaereas.FirstOrDefault(c => c.Cod == passagemDto.CompanhiaAereaCod);
+			if (companhia == null)
 				return BadRequest("Não existe uma companhia aérea com esse código.");
 
 			if (!Enum.IsDefined(typeof(TipoPassagem), passagemDto.TipoPassagem))
 				return BadRequest("O tipo de passagem é inválido.");
-			
-			double valorPassagem = passagemDto.TipoPassagem switch
+
+			double valorPassagem = 0;
+
+			if (voo1 != null)
 			{
-				TipoPassagem.Basica => passagemService.calcularValorBasica(),
-				TipoPassagem.Business => passagemService.calcularValorBusiness(),
-				TipoPassagem.Premium => passagemService.calcularValorPremium(),
-				_ => throw new InvalidOperationException("Tipo de passagem inválido.")
-			};
+				valorPassagem += passagemService.CalcularValor(passagemDto.TipoPassagem, voo1.EhInternacional == 1);
+			}
+
+			if (voo2 != null)
+			{
+				valorPassagem += passagemService.CalcularValor(passagemDto.TipoPassagem, voo2.EhInternacional == 1);
+			}
+
+			var valorBagagemInfo = db.Valorbagagems.FirstOrDefault(vb => vb.Id == passagemDto.ValorBagagemId);
+			if (valorBagagemInfo == null)
+				return BadRequest("Informações de bagagem não encontradas.");
+
+			double valorTotalBagagem = passagemService.CalcularValorBagagem(
+											valorBagagemInfo.ValorPrimeiraBagagem ?? 0,
+											valorBagagemInfo.ValorBagagemAdicional ?? 0
+			);
+
+			double valorTotalTarifa = valorPassagem + valorTotalBagagem;
+
+			int tarifaId = CalcularEAdicionarTarifa(valorTotalTarifa, passagemDto.CompanhiaAereaCod);
+
+			var isInternacional = voo1.EhInternacional == 1 || (voo2?.EhInternacional == 1);
+			var moeda = isInternacional ? "USD" : "BRL";
 
 			var passagem = new Passagem
 			{
-				Moeda = passagemDto.Moeda,
-				TarifaIdTarifa = passagemDto.TarifaIdTarifa,
+				Moeda = moeda,
+				TarifaIdTarifa = tarifaId,
 				ValorbagagemId = passagemDto.ValorBagagemId,
 				IdVoo1 = passagemDto.IdVoo1,
-				IdVoo2 = passagemDto.IdVoo2,
-				CompanhiaAereaCod = passagemDto.CompanhiaAereaCod,
+				IdVoo2 = passagemDto.IdVoo2 != 0 ? passagemDto.IdVoo2 : (int?)null,
+				CompanhiaAereaId = passagemDto.CompanhiaAereaCod,
 				ValorPassagem = valorPassagem,
+				Status = passagemDto.Status,
 			};
 
 			try
@@ -231,7 +245,70 @@ namespace FlyNow.Controllers
 			}
 			catch (Exception ex)
 			{
-				return BadRequest($"Erro ao cadastrar passagem: {ex.Message}");
+				return BadRequest($"Erro ao cadastrar passagem: {ex.Message} - Inner Exception: {ex.InnerException?.Message}");
+			}
+		}
+
+		private int CalcularEAdicionarTarifa(double valorTotal, int companhiaAereaCod)
+		{
+			var companhia = db.Companhiaaereas.FirstOrDefault(c => c.Cod == companhiaAereaCod);
+			if (companhia == null)
+				throw new InvalidOperationException("Companhia aérea não encontrada.");
+
+			double? taxaRemuneracao = companhia.TaxaRemuneracao;
+			double? valorComRemuneracao = valorTotal + (valorTotal * taxaRemuneracao / 100);
+
+			var tarifa = new Tarifa
+			{
+				Valor = valorComRemuneracao,
+				CompanhiaaereaCod = companhiaAereaCod
+			};
+
+			db.Tarifas.Add(tarifa);
+			db.SaveChanges();
+
+			return tarifa.IdTarifa;
+		}
+
+		[HttpPost("RemarcarPassagem")]
+		public IActionResult RemarcarPassagem(int passagemId, int novoVoo1Id, int? novoVoo2Id, int novoAssentoId)
+		{
+			var passagem = db.Passagems.FirstOrDefault(p => p.IdPassagem == passagemId);
+			if (passagem == null || passagem.Status != StatusPassagemDto.Cancelada)
+				return BadRequest("Passagem não encontrada ou não está cancelada.");
+
+			var novoVoo1 = db.Voos.FirstOrDefault(v => v.IdVoo == novoVoo1Id);
+			if (novoVoo1 == null)
+				return BadRequest("Novo voo 1 não encontrado.");
+
+			var novoVoo2 = novoVoo2Id.HasValue ? db.Voos.FirstOrDefault(v => v.IdVoo == novoVoo2Id.Value) : null;
+			if (novoVoo2Id.HasValue && novoVoo2 == null)
+				return BadRequest("Novo voo 2 não encontrado.");
+
+			var assento = db.Assentos.FirstOrDefault(a => a.IdAssento == novoAssentoId);
+			if (assento == null || assento.Ocupado == 1)
+				return BadRequest("Assento não disponível.");
+
+			passagem.Status = StatusPassagemDto.Ativa;
+			passagem.IdVoo1 = novoVoo1Id;
+			passagem.IdVoo2 = novoVoo2Id;
+
+			var bilhetes = db.Bilhetes.Where(b => b.PassagemIdPassagem == passagemId).ToList();
+			foreach (var bilhete in bilhetes)
+			{
+				bilhete.IdAssento = novoAssentoId;
+			}
+
+			assento.Ocupado = 1;
+
+			try
+			{
+				db.SaveChanges();
+				return Ok("Passagem remarcada com sucesso.");
+			}
+			catch (Exception ex)
+			{
+				return BadRequest($"Erro ao remarcar passagem: {ex.Message}");
 			}
 		}
 	}
