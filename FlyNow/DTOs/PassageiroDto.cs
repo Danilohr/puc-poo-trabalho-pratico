@@ -16,7 +16,5 @@ public class PassageiroDto
 
 	public string? Rg { get; set; }
 
-	public string? Passaporte { get; set; }
-
 	public int UsuarioIdUsuario { get; set; }
 }

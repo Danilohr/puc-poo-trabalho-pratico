@@ -75,7 +75,7 @@ namespace FlyNow.Controllers
 			return Ok("Passageiro tornado VIP com sucesso.");
 		}
 
-		[HttpPost("CadastrarPassageiro")]
+		[HttpPost("CadastrarPssageiro")]
 		public IActionResult cadastrarPassageiro([FromQuery] PassageiroDto passageiroDto)
 		{
 			if (string.IsNullOrEmpty(passageiroDto.Nome))
@@ -86,8 +86,6 @@ namespace FlyNow.Controllers
 				return BadRequest("Email é obrigatório.");
 			if (string.IsNullOrEmpty(passageiroDto.Rg))
 				return BadRequest("Rg é obrigatório.");
-			if (string.IsNullOrEmpty(passageiroDto.Passaporte))
-				return BadRequest("Passaporte é obrigatório.");
 
 			var usuarioExistente = db.Usuarios.Any(u => u.IdUsuario == passageiroDto.UsuarioIdUsuario);
 			if (!usuarioExistente)
@@ -99,7 +97,6 @@ namespace FlyNow.Controllers
 				Cpf = passageiroDto.Cpf,
 				Email = passageiroDto.Email,
 				Rg = passageiroDto.Rg,
-				Passaporte = passageiroDto.Passaporte,
 				UsuarioIdUsuario = passageiroDto.UsuarioIdUsuario,
 			};
 
@@ -114,63 +111,5 @@ namespace FlyNow.Controllers
 				return BadRequest($"Erro ao cadastrar passageiro: {ex.Message}");
 			}
 		}
-
-		[HttpPost("EmitirBilhete")]
-		public IActionResult EmitirBilhete([FromQuery] EmitirBilheteDto bilheteDto)
-		{
-			if (bilheteDto.PassageiroId <= 0)
-				return BadRequest("Passageiro não encontrado.");
-
-			if (bilheteDto.PassagemId <= 0)
-				return BadRequest("Passagem não encontrada.");
-
-			var passageiro = db.Passageiros.FirstOrDefault(p => p.IdPassageiro == bilheteDto.PassageiroId);
-			if (passageiro == null)
-				return NotFound("Passageiro não encontrado.");
-
-			var passagem = db.Passagems.FirstOrDefault(p => p.IdPassagem == bilheteDto.PassagemId);
-			if (passagem == null)
-				return NotFound("Passagem não encontrada.");
-
-			bool isVooInternacional = bilheteDto.BilheteInternacional == 1;
-
-			if (isVooInternacional)
-			{
-				if (string.IsNullOrEmpty(passageiro.Rg) && string.IsNullOrEmpty(passageiro.Cpf) && string.IsNullOrEmpty(passageiro.Passaporte))
-				{
-					return BadRequest("Passageiro precisa fornecer um Passaporte para voos internacionais.");
-				}
-			}
-			else
-			{
-				if (string.IsNullOrEmpty(passageiro.Rg) && string.IsNullOrEmpty(passageiro.Cpf))
-				{
-					return BadRequest("Passageiro precisa fornecer RG ou CPF para voos nacionais.");
-				}
-			}
-
-			var bilhete = new Bilhete
-			{
-				PassageiroIdPassageiro = bilheteDto.PassageiroId,
-				PassagemIdPassagem = bilheteDto.PassagemId,
-				BilheteInternacional = bilheteDto.BilheteInternacional,
-				StatusPassageiro = bilheteDto.StatusPassageiro,
-				Passageiro = passageiro,
-				Passagem = passagem
-			};
-
-			try
-			{
-				db.Bilhetes.Add(bilhete);
-				db.SaveChanges();
-				return CreatedAtAction(nameof(EmitirBilhete), new { id = bilhete.PassagemIdPassagem }, bilhete);
-			}
-			catch (Exception ex)
-			{
-				return BadRequest($"Erro ao emitir bilhete: {ex.Message}");
-			}
-		}
-
-		
 	}
 }
