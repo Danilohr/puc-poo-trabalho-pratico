@@ -18,29 +18,6 @@ USE `sistema_aeroporto`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `__efmigrationshistory`
---
-
-DROP TABLE IF EXISTS `__efmigrationshistory`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `__efmigrationshistory` (
-  `MigrationId` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `ProductVersion` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  PRIMARY KEY (`MigrationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `__efmigrationshistory`
---
-
-LOCK TABLES `__efmigrationshistory` WRITE;
-/*!40000 ALTER TABLE `__efmigrationshistory` DISABLE KEYS */;
-/*!40000 ALTER TABLE `__efmigrationshistory` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `aeronave`
 --
 
@@ -49,15 +26,12 @@ DROP TABLE IF EXISTS `aeronave`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `aeronave` (
   `id_aeronave` int NOT NULL AUTO_INCREMENT,
-  `nome` varchar(45) NOT NULL,
   `capacidadePassageiros` int NOT NULL,
   `capacidadeBagagens` int NOT NULL,
-  `NumeroFileiras` int NOT NULL,
-  `AssentosPorFileira` int NOT NULL,
   PRIMARY KEY (`id_aeronave`),
   UNIQUE KEY `capacidadePassageiros_UNIQUE` (`capacidadePassageiros`),
   UNIQUE KEY `capacidadeBagagens_UNIQUE` (`capacidadeBagagens`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -66,7 +40,7 @@ CREATE TABLE `aeronave` (
 
 LOCK TABLES `aeronave` WRITE;
 /*!40000 ALTER TABLE `aeronave` DISABLE KEYS */;
-INSERT INTO `aeronave` VALUES (1,'Boeing 737',180,5000,0,0);
+INSERT INTO `aeronave` VALUES (1,200,500),(2,150,350),(3,250,600);
 /*!40000 ALTER TABLE `aeronave` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -83,10 +57,8 @@ CREATE TABLE `aeroporto` (
   `nome` varchar(100) DEFAULT NULL,
   `cidade` varchar(100) DEFAULT NULL,
   `uf` varchar(2) DEFAULT NULL,
-  `Latitude` double DEFAULT NULL,
-  `Longitude` double DEFAULT NULL,
   PRIMARY KEY (`id_aeroporto`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -95,7 +67,7 @@ CREATE TABLE `aeroporto` (
 
 LOCK TABLES `aeroporto` WRITE;
 /*!40000 ALTER TABLE `aeroporto` DISABLE KEYS */;
-INSERT INTO `aeroporto` VALUES (3,'GRU','Aeroporto Internacional de São Paulo - Guarulhos','Guarulhos','SP',-23.4255,-46.4755),(4,'GIG','Aeroporto Internacional do Rio de Janeiro - Galeão','Rio de Janeiro','RJ',-22.8089,-43.2437),(5,'BSB','Aeroporto Internacional de Brasília','Brasília','DF',-15.78,-47.9292);
+INSERT INTO `aeroporto` VALUES (1,'GRU','Aeroporto Internacional de São Paulo','São Paulo','SP'),(2,'GIG','Aeroporto Internacional do Rio de Janeiro','Rio de Janeiro','RJ'),(3,'CNF','Aeroporto Internacional Tancredo Neves','Belo Horizonte','MG');
 /*!40000 ALTER TABLE `aeroporto` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -142,7 +114,7 @@ CREATE TABLE `assento` (
   PRIMARY KEY (`id_assento`,`aeronave_id_aeronave`),
   KEY `fk_assento_aeronave1_idx` (`aeronave_id_aeronave`),
   CONSTRAINT `fk_assento_aeronave1` FOREIGN KEY (`aeronave_id_aeronave`) REFERENCES `aeronave` (`id_aeronave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -151,6 +123,7 @@ CREATE TABLE `assento` (
 
 LOCK TABLES `assento` WRITE;
 /*!40000 ALTER TABLE `assento` DISABLE KEYS */;
+INSERT INTO `assento` VALUES (1,1,'A',1,0),(2,3,'C',1,0),(3,2,'B',1,1);
 /*!40000 ALTER TABLE `assento` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -166,12 +139,9 @@ CREATE TABLE `bilhete` (
   `passageiro_idPassageiro` int NOT NULL,
   `BilheteInternacional` tinyint DEFAULT NULL,
   `statusPassageiro` enum('Passagem adquirida','Passagem cancelada','Check-in realizado','Embarque realizado','NO SHOW') DEFAULT NULL,
-  `IdAssento` int DEFAULT NULL,
   PRIMARY KEY (`passagem_idPassagem`,`passageiro_idPassageiro`),
   KEY `fk_bilhete_passagem1_idx` (`passagem_idPassagem`),
   KEY `fk_bilhete_passageiro1_idx` (`passageiro_idPassageiro`),
-  KEY `FK_Bilhete_Assento` (`IdAssento`),
-  CONSTRAINT `FK_Bilhete_Assento` FOREIGN KEY (`IdAssento`) REFERENCES `assento` (`id_assento`),
   CONSTRAINT `fk_bilhete_passageiro1` FOREIGN KEY (`passageiro_idPassageiro`) REFERENCES `passageiro` (`idPassageiro`),
   CONSTRAINT `fk_bilhete_passagem1` FOREIGN KEY (`passagem_idPassagem`) REFERENCES `passagem` (`idPassagem`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -200,7 +170,7 @@ CREATE TABLE `companhiaaerea` (
   `cnpj` varchar(14) NOT NULL,
   `taxaRemuneracao` double DEFAULT NULL,
   PRIMARY KEY (`cod`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -209,7 +179,7 @@ CREATE TABLE `companhiaaerea` (
 
 LOCK TABLES `companhiaaerea` WRITE;
 /*!40000 ALTER TABLE `companhiaaerea` DISABLE KEYS */;
-INSERT INTO `companhiaaerea` VALUES (4,'Qatar Airways','Qatar Airways Group','08734301000150',12);
+INSERT INTO `companhiaaerea` VALUES (1,'Azul Linhas Aéreas','Azul Linhas Aéreas Brasileiras S.A.','12345678000195',12.5),(2,'Gol Linhas Aéreas','Gol Linhas Aéreas Inteligentes S.A.','23456789000185',10),(3,'Latam Airlines','Latam Airlines Group S.A.','34567890000175',11),(4,'Azul Linhas Aéreas','Azul Linhas Aéreas Brasileiras S.A.','12345678000195',12.5),(5,'Gol Linhas Aéreas','Gol Linhas Aéreas Inteligentes S.A.','23456789000185',10),(6,'Latam Airlines','Latam Airlines Group S.A.','34567890000175',11),(7,'Azul Linhas Aéreas','Azul Linhas Aéreas Brasileiras S.A.','12345678000195',12.5),(8,'Gol Linhas Aéreas','Gol Linhas Aéreas Inteligentes S.A.','23456789000185',10),(9,'Latam Airlines','Latam Airlines Group S.A.','34567890000175',11);
 /*!40000 ALTER TABLE `companhiaaerea` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -262,7 +232,7 @@ CREATE TABLE `funcionario` (
 
 LOCK TABLES `funcionario` WRITE;
 /*!40000 ALTER TABLE `funcionario` DISABLE KEYS */;
-INSERT INTO `funcionario` VALUES (1,'11122233344','Joao silva','joaosilva@gmail.com'),(2,'22211133344','Alice silva','alicesilva@gmail.com'),(3,'33311122244','Matheus Pereira','gelado@gmail.com');
+INSERT INTO `funcionario` VALUES (1,'12345678901','Carlos Silva','carlos.silva@empresa.com'),(2,'23456789012','Mariana Costa','mariana.costa@empresa.com'),(3,'34567890123','Ana Souza','ana.souza@empresa.com');
 /*!40000 ALTER TABLE `funcionario` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -280,7 +250,6 @@ CREATE TABLE `passageiro` (
   `rg` varchar(20) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
   `usuario_id_usuario` int NOT NULL,
-  `Passaporte` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
   PRIMARY KEY (`idPassageiro`),
   UNIQUE KEY `rg_UNIQUE` (`rg`),
   KEY `fk_viajante_usuario1_idx` (`usuario_id_usuario`),
@@ -294,6 +263,7 @@ CREATE TABLE `passageiro` (
 
 LOCK TABLES `passageiro` WRITE;
 /*!40000 ALTER TABLE `passageiro` DISABLE KEYS */;
+INSERT INTO `passageiro` VALUES (1,'João Mendes','98765432100','MG1234567','joao.mendes@email.com',1),(2,'Maria Fernanda','87654321099','SP7654321','maria.fernanda@email.com',2),(3,'Lucas Silva','76543210988','RJ6543210','lucas.silva@email.com',3);
 /*!40000 ALTER TABLE `passageiro` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -321,6 +291,7 @@ CREATE TABLE `passageirovip` (
 
 LOCK TABLES `passageirovip` WRITE;
 /*!40000 ALTER TABLE `passageirovip` DISABLE KEYS */;
+INSERT INTO `passageirovip` VALUES (1,1),(2,2),(3,3);
 /*!40000 ALTER TABLE `passageirovip` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -338,22 +309,17 @@ CREATE TABLE `passagem` (
   `valorbagagem_id` int NOT NULL,
   `idVoo1` int NOT NULL,
   `idVoo2` int DEFAULT NULL,
-  `ValorPassagem` double DEFAULT NULL,
-  `CompanhiaAereaId` int NOT NULL,
-  `Status` enum('Ativa','Cancelada') NOT NULL DEFAULT 'Ativa',
   PRIMARY KEY (`idPassagem`),
   UNIQUE KEY `voo_id_voo_UNIQUE` (`idVoo1`),
   KEY `fk_passagem_valorbagagem1_idx` (`valorbagagem_id`),
   KEY `fk_passagem_voo1_idx` (`idVoo1`),
   KEY `fk_passagem_voo2_idx` (`idVoo2`),
   KEY `fk_passagem_tarifa1_idx` (`tarifa_idTarifa`),
-  KEY `FK_Passagem_CompanhiaAerea` (`CompanhiaAereaId`),
-  CONSTRAINT `FK_Passagem_CompanhiaAerea` FOREIGN KEY (`CompanhiaAereaId`) REFERENCES `companhiaaerea` (`cod`),
   CONSTRAINT `fk_passagem_tarifa1` FOREIGN KEY (`tarifa_idTarifa`) REFERENCES `tarifa` (`idTarifa`),
   CONSTRAINT `fk_passagem_valorbagagem1` FOREIGN KEY (`valorbagagem_id`) REFERENCES `valorbagagem` (`id`),
   CONSTRAINT `fk_passagem_voo1` FOREIGN KEY (`idVoo1`) REFERENCES `voo` (`id_voo`),
   CONSTRAINT `fk_passagem_voo2` FOREIGN KEY (`idVoo2`) REFERENCES `voo` (`id_voo`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -362,7 +328,6 @@ CREATE TABLE `passagem` (
 
 LOCK TABLES `passagem` WRITE;
 /*!40000 ALTER TABLE `passagem` DISABLE KEYS */;
-INSERT INTO `passagem` VALUES (10,'BRL',5,2,3,NULL,1000,4,'Ativa');
 /*!40000 ALTER TABLE `passagem` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -380,7 +345,7 @@ CREATE TABLE `tarifa` (
   PRIMARY KEY (`idTarifa`),
   KEY `fk_tarifa_companhiaaerea1_idx` (`companhiaaerea_cod`),
   CONSTRAINT `fk_tarifa_companhiaaerea1` FOREIGN KEY (`companhiaaerea_cod`) REFERENCES `companhiaaerea` (`cod`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -389,7 +354,6 @@ CREATE TABLE `tarifa` (
 
 LOCK TABLES `tarifa` WRITE;
 /*!40000 ALTER TABLE `tarifa` DISABLE KEYS */;
-INSERT INTO `tarifa` VALUES (2,1232,4),(3,1232,4),(4,1232,4),(5,1232,4);
 /*!40000 ALTER TABLE `tarifa` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -404,10 +368,10 @@ CREATE TABLE `usuario` (
   `id_usuario` int NOT NULL,
   `login` varchar(50) DEFAULT NULL,
   `senha` varchar(100) DEFAULT NULL,
-  `funcionario_idFuncionario` int NOT NULL,
+  `funcionario_id-funcionario` int NOT NULL,
   PRIMARY KEY (`id_usuario`),
-  KEY `fk_usuario_funcionario1_idx` (`funcionario_idFuncionario`),
-  CONSTRAINT `fk_usuario_funcionario1` FOREIGN KEY (`funcionario_idFuncionario`) REFERENCES `funcionario` (`idFuncionario`)
+  KEY `fk_usuario_funcionario1_idx` (`funcionario_id-funcionario`),
+  CONSTRAINT `fk_usuario_funcionario1` FOREIGN KEY (`funcionario_id-funcionario`) REFERENCES `funcionario` (`idFuncionario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -417,7 +381,7 @@ CREATE TABLE `usuario` (
 
 LOCK TABLES `usuario` WRITE;
 /*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
-INSERT INTO `usuario` VALUES (1,'admin','admin',3);
+INSERT INTO `usuario` VALUES (1,'carloss','senha123',1),(2,'marianac','senha456',2),(3,'anas','senha789',3);
 /*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -437,7 +401,7 @@ CREATE TABLE `valorbagagem` (
   UNIQUE KEY `companhiaaerea_cod_UNIQUE` (`companhiaaerea_cod`),
   KEY `fk_valorbagagem_companhiaaerea1_idx` (`companhiaaerea_cod`),
   CONSTRAINT `fk_valorbagagem_companhiaaerea1` FOREIGN KEY (`companhiaaerea_cod`) REFERENCES `companhiaaerea` (`cod`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -446,7 +410,6 @@ CREATE TABLE `valorbagagem` (
 
 LOCK TABLES `valorbagagem` WRITE;
 /*!40000 ALTER TABLE `valorbagagem` DISABLE KEYS */;
-INSERT INTO `valorbagagem` VALUES (2,60,40,4);
 /*!40000 ALTER TABLE `valorbagagem` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -462,7 +425,7 @@ CREATE TABLE `voo` (
   `codVoo` varchar(10) DEFAULT NULL,
   `data` datetime DEFAULT NULL,
   `ehInternacional` tinyint DEFAULT '0',
-  `duracao` time DEFAULT NULL,
+  `duracao` date DEFAULT NULL,
   `companhiaaerea_cod` int NOT NULL,
   `aeronave_id_aeronave` int NOT NULL,
   `idAeroportoOrigem` int NOT NULL,
@@ -476,7 +439,7 @@ CREATE TABLE `voo` (
   CONSTRAINT `fk_voo_aeroporto1` FOREIGN KEY (`idAeroportoOrigem`) REFERENCES `aeroporto` (`id_aeroporto`),
   CONSTRAINT `fk_voo_aeroporto2` FOREIGN KEY (`idAeroportoDestino`) REFERENCES `aeroporto` (`id_aeroporto`),
   CONSTRAINT `fk_voo_companhiaaerea1` FOREIGN KEY (`companhiaaerea_cod`) REFERENCES `companhiaaerea` (`cod`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -485,7 +448,6 @@ CREATE TABLE `voo` (
 
 LOCK TABLES `voo` WRITE;
 /*!40000 ALTER TABLE `voo` DISABLE KEYS */;
-INSERT INTO `voo` VALUES (3,'AB1234','2024-12-15 10:30:00',0,NULL,4,1,3,4),(8,'AB1234','2024-12-06 13:11:25',0,NULL,4,1,3,4),(9,'AB1234','2024-12-09 13:11:25',0,NULL,4,1,3,4),(10,'AB1234','2024-12-11 13:11:25',0,NULL,4,1,3,4),(11,'AB1234','2024-12-13 13:11:25',0,NULL,4,1,3,4),(12,'AB1234','2024-12-16 13:11:25',0,NULL,4,1,3,4),(13,'AB1234','2024-12-18 13:11:25',0,NULL,4,1,3,4),(14,'AB1234','2024-12-20 13:11:25',0,NULL,4,1,3,4),(15,'AB1234','2024-12-23 13:11:25',0,NULL,4,1,3,4),(16,'AB1234','2024-12-25 13:11:25',0,NULL,4,1,3,4),(17,'AB1234','2024-12-27 13:11:25',0,NULL,4,1,3,4),(18,'AB1234','2024-12-30 13:11:25',0,NULL,4,1,3,4),(19,'AB1234','2025-01-01 13:11:25',0,NULL,4,1,3,4),(20,'AB1234','2025-01-03 13:11:25',0,NULL,4,1,3,4);
 /*!40000 ALTER TABLE `voo` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -498,4 +460,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-05 14:07:44
+-- Dump completed on 2024-12-02  9:53:01

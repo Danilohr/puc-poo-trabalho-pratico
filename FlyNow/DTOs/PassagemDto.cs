@@ -8,6 +8,10 @@ namespace FlyNow.DTOs;
 
 public class PassagemDto
 {
+	public string Moeda { get; set; }
+	
+	public int TarifaIdTarifa { get; set; }
+	
 	public int ValorBagagemId { get; set; }
 	
 	public int IdVoo1 { get; set; }
@@ -15,8 +19,6 @@ public class PassagemDto
 	public int IdVoo2 { get; set; }
 	
 	public int CompanhiaAereaCod { get; set; }
-
-	public StatusPassagemDto Status { get; set; }
-
-	public TipoPassagem TipoPassagem { get; set; } // 1 = Básica, 2 = Business, 3 = Premium 
+	
+	public TipoPassagem TipoPassagem { get; set; }
 }
