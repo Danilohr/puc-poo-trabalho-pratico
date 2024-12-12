@@ -15,9 +15,9 @@ namespace FlyNow.Controllers
 		public VooController() : base (new FlyNowContext(), new ServicoLog()) {}
 		public VooController(FlyNowContext db) : base (db, new ServicoLog()) { }
 
-				private float CalculaDistanciaKm(float lat1, float long1, float lat2, float long2)
+		private double CalculaDistanciaKm(double lat1, double long1, double lat2, double long2)
 		{
-			return 110.57f * MathF.Sqrt(MathF.Pow(lat2 - lat1, 2) + MathF.Pow(long2 - long1, 2));
+			return 110.57 * Math.Sqrt(Math.Pow(lat2 - lat1, 2) + Math.Pow(long2 - long1, 2));
 		}
 
 		private void AtualizarDuracaoEHorario(Voo voo)
@@ -28,7 +28,7 @@ namespace FlyNow.Controllers
 			if (aeroportoOrigem == null || aeroportoDestino == null)
 				throw new Exception("Aeroporto de origem ou destino não encontrado.");
 
-			float distanciaKm = CalculaDistanciaKm(
+			double distanciaKm = CalculaDistanciaKm(
 					aeroportoOrigem.Latitude,
 					aeroportoOrigem.Longitude,
 					aeroportoDestino.Latitude,
@@ -38,7 +38,7 @@ namespace FlyNow.Controllers
 			if (voo.VelocidadeMedia <= 0)
 				throw new Exception("Velocidade média da aeronave deve ser maior que zero.");
 
-			float duracaoHoras = distanciaKm / voo.VelocidadeMedia;
+			double duracaoHoras = distanciaKm / voo.VelocidadeMedia;
 
 			voo.Duracao = TimeOnly.FromTimeSpan(TimeSpan.FromHours(duracaoHoras));
 			voo.HorarioPrevistoChegada = voo.Data.AddHours(duracaoHoras);
@@ -189,6 +189,8 @@ namespace FlyNow.Controllers
 				AtualizarDuracaoEHorario(voo); // Calcula distância e horários
 				db.Voos.Add(voo);
 				db.SaveChanges();
+
+				return Ok("Voo salvo com sucesso!");
 			}
 			catch (Exception ex)
 			{

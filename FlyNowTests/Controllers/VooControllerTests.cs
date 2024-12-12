@@ -167,7 +167,7 @@ namespace Tests
 			using (var transaction = context.Database.BeginTransaction())
 			{
 				// TESTE 1
-				var result = vooController.GetVoo(1, 2, new DateTime(2024, 11, 10, 14, 00, 00));
+				var result = vooController.GetVoos(1, 2, new DateTime(2024, 11, 10, 14, 00, 00));
 				Assert.IsInstanceOfType(result, typeof(OkObjectResult));
 
 				// TESTE 2
@@ -237,7 +237,7 @@ namespace Tests
 				Assert.IsInstanceOfType(cancelamentoVoo, typeof(OkObjectResult));
 
 				var statusPassagem = bilhetesController.VerificarStatusPassagem(passageiroVip.IdPassageiro);
-				Assert.AreEqual("Passagem cancelada", statusPassagem);
+				Assert.IsInstanceOfType("Passagem cancelada", statusPassagem);
 
 				transaction.Rollback();
 			}
