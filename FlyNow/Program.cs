@@ -8,7 +8,7 @@ using FlyNow.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddScoped<ILog, ServicoLog>();// Adiciona serviços de log
+builder.Services.AddScoped<ILog, ServicoLog>();
 
 builder.Services.AddControllers();
 
