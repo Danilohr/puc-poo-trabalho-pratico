@@ -15,11 +15,7 @@ namespace FlyNow.Controllers
 		public VooController() : base (new FlyNowContext(), new ServicoLog()) {}
 		public VooController(FlyNowContext db) : base (db, new ServicoLog()) { }
 
-		public VooController(FlyNowContext context, ILog logServico) : base(context) 
-		{
-			_logServico = logServico;
-		}
-		private float CalculaDistanciaKm(float lat1, float long1, float lat2, float long2)
+				private float CalculaDistanciaKm(float lat1, float long1, float lat2, float long2)
 		{
 			return 110.57f * MathF.Sqrt(MathF.Pow(lat2 - lat1, 2) + MathF.Pow(long2 - long1, 2));
 		}
