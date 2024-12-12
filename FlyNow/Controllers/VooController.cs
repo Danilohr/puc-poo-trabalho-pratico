@@ -15,6 +15,39 @@ namespace FlyNow.Controllers
 		public VooController() : base (new FlyNowContext(), new ServicoLog()) {}
 		public VooController(FlyNowContext db) : base (db, new ServicoLog()) { }
 
+		public VooController(FlyNowContext context, ILog logServico) : base(context) 
+		{
+			_logServico = logServico;
+		}
+		private float CalculaDistanciaKm(float lat1, float long1, float lat2, float long2)
+		{
+			return 110.57f * MathF.Sqrt(MathF.Pow(lat2 - lat1, 2) + MathF.Pow(long2 - long1, 2));
+		}
+
+		private void AtualizarDuracaoEHorario(Voo voo)
+		{
+			var aeroportoOrigem = db.Aeroportos.Find(voo.IdAeroportoOrigem);
+			var aeroportoDestino = db.Aeroportos.Find(voo.IdAeroportoDestino);
+
+			if (aeroportoOrigem == null || aeroportoDestino == null)
+				throw new Exception("Aeroporto de origem ou destino não encontrado.");
+
+			float distanciaKm = CalculaDistanciaKm(
+					aeroportoOrigem.Latitude,
+					aeroportoOrigem.Longitude,
+					aeroportoDestino.Latitude,
+					aeroportoDestino.Longitude
+			);
+
+			if (voo.VelocidadeMedia <= 0)
+				throw new Exception("Velocidade média da aeronave deve ser maior que zero.");
+
+			float duracaoHoras = distanciaKm / voo.VelocidadeMedia;
+
+			voo.Duracao = TimeOnly.FromTimeSpan(TimeSpan.FromHours(duracaoHoras));
+			voo.HorarioPrevistoChegada = voo.Data.AddHours(duracaoHoras);
+		}
+
 		[HttpGet]
 		public IActionResult Get()
 		{
@@ -72,17 +105,25 @@ namespace FlyNow.Controllers
 			logServico.RegistrarLog("Consulta de voos internacionais realizada.");
 			return Ok(lista);
 		}
-
-
-		[HttpGet("buscar-voo")]
-		public IActionResult GetVoo([FromQuery] int idAeroOrigem, [FromQuery] int idAeroDestino, [FromQuery] DateTime data)
+	
+		[HttpPost]
+		public IActionResult SaveVoo(Voo voo)
 		{
-			var voo = db.Voos
-				.Where(v => v.IdAeroportoOrigem == idAeroOrigem && v.IdAeroportoDestino == idAeroDestino && v.Data == data)
-				.ToList();
+			try
+			{
+				AtualizarDuracaoEHorario(voo); // Calcula distância e horários
+				db.Voos.Add(voo);
+				db.SaveChanges();
+			}
+			catch (Exception ex)
+			{
+				return BadRequest($"Erro ao salvar voo: {ex.Message}");
+			}
 
 			return Ok(voo);
 		}
+
+
 	}
 
 }
