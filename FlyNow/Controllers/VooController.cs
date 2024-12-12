@@ -77,8 +77,8 @@ namespace FlyNow.Controllers
 				.Where(b => b.PassageiroIdPassageiro == idPassageiro)
 				.Select(b => new
 				{
-					Voo1 = b.Passagem.Voo1,
-					Voo2 = b.Passagem.Voo2
+					Voo1 = b.PassagemIdPassagemNavigation.Voo1,
+					Voo2 = b.PassagemIdPassagemNavigation.Voo2
 				})
 				.ToList();
 
@@ -101,7 +101,86 @@ namespace FlyNow.Controllers
 			logServico.RegistrarLog("Consulta de voos internacionais realizada.");
 			return Ok(lista);
 		}
-	
+
+		[HttpGet("buscar-voos")]
+		public IActionResult GetVoos([FromQuery] int idAeroOrigem, [FromQuery] int idAeroDestino, [FromQuery] DateTime dataIda, [FromQuery] DateTime? dataVolta = null)
+		{
+			var voosIda = db.Voos
+					.Where(v => v.IdAeroportoOrigem == idAeroOrigem &&
+											v.IdAeroportoDestino == idAeroDestino &&
+											v.Data.Date == dataIda.Date)
+					.ToList();
+
+			var voosIdaComConexao = db.Voos
+				.Where(v1 => v1.IdAeroportoOrigem == idAeroOrigem &&
+										 v1.Data.Date == dataIda.Date)
+				.SelectMany(v1 => db.Voos
+						.Where(v2 => v2.IdAeroportoOrigem == v1.IdAeroportoDestino &&
+												 v2.IdAeroportoDestino == idAeroDestino &&
+												 v2.Data.Date == dataIda.Date)
+						.Select(v2 => new
+						{
+							Voo1 = v1,
+							Voo2 = v2
+						}))
+				.ToList();
+
+			var resultado = new List<object>();
+
+			resultado.AddRange(voosIda.Select(v => new
+			{
+				Tipo = "Direto",
+				Voo = v,
+				Conexao = null as object
+			}));
+
+			resultado.AddRange(voosIdaComConexao.Select(c => new
+			{
+				Tipo = "Conexão",
+				Voo = c.Voo1,
+				Conexao = c.Voo2
+			}));
+
+			if (dataVolta.HasValue)
+			{
+				var voosVolta = db.Voos
+						.Where(v => v.IdAeroportoOrigem == idAeroDestino &&
+												v.IdAeroportoDestino == idAeroOrigem &&
+												v.Data.Date == dataVolta.Value.Date)
+						.ToList();
+
+				var voosVoltaComConexao = db.Voos
+						.Where(v1 => v1.IdAeroportoOrigem == idAeroDestino &&
+												 v1.Data.Date == dataVolta.Value.Date)
+						.SelectMany(v1 => db.Voos
+								.Where(v2 => v2.IdAeroportoOrigem == v1.IdAeroportoDestino &&
+														 v2.IdAeroportoDestino == idAeroOrigem &&
+														 v2.Data.Date == dataVolta.Value.Date)
+								.Select(v2 => new
+								{
+									Voo1 = v1,
+									Voo2 = v2
+								}))
+						.ToList();
+
+				resultado.AddRange(voosVolta.Select(v => new
+				{
+					Tipo = "Retorno Direto",
+					Voo = v,
+					Conexao = null as object
+				}));
+
+				resultado.AddRange(voosVoltaComConexao.Select(c => new
+				{
+					Tipo = "Retorno com Conexão",
+					Voo = c.Voo1,
+					Conexao = c.Voo2
+				}));
+			}
+
+			return Ok(resultado);
+		}
+
 		[HttpPost]
 		public IActionResult SaveVoo(Voo voo)
 		{
@@ -115,11 +194,7 @@ namespace FlyNow.Controllers
 			{
 				return BadRequest($"Erro ao salvar voo: {ex.Message}");
 			}
-
-			return Ok(voo);
-		}
-
-
+    }
 	}
 
 }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using FlyNow.Controllers;
 using FlyNow.EfModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -53,6 +55,15 @@ public partial class FlyNowContext : DbContext
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
+		modelBuilder.Entity<Bilhete>()
+				.Property(b => b.StatusPassageiro)
+				.HasConversion(
+						v => GetEnumValue(v),  
+						v => MapStringToEnum(v.Trim())
+				);
+
+		base.OnModelCreating(modelBuilder);
+
 
 		modelBuilder.Entity<PassageiroVip>(entity =>
 		{
@@ -180,12 +191,12 @@ public partial class FlyNowContext : DbContext
 							.HasColumnType("enum('Passagem adquirida','Passagem cancelada','Check-in realizado','Embarque realizado','NO SHOW')")
 							.HasColumnName("statusPassageiro");
 
-			entity.HasOne(d => d.Passageiro).WithMany(p => p.Bilhetes)
+			entity.HasOne(d => d.PassagemIdPassagemNavigation).WithMany(p => p.Bilhetes)
 							.HasForeignKey(d => d.PassageiroIdPassageiro)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_bilhete_passageiro1");
 
-			entity.HasOne(d => d.Passagem).WithMany(p => p.Bilhetes)
+			entity.HasOne(d => d.PassageiroIdPassageiroNavigation).WithMany(p => p.Bilhetes)
 							.HasForeignKey(d => d.PassagemIdPassagem)
 							.OnDelete(DeleteBehavior.ClientSetNull)
 							.HasConstraintName("fk_bilhete_passagem1");
@@ -438,6 +449,29 @@ public partial class FlyNowContext : DbContext
 		});
 
 		OnModelCreatingPartial(modelBuilder);
+	}
+	private StatusPassagem MapStringToEnum(string status)
+	{
+		Console.WriteLine(status);
+		return status.Trim() switch
+		{
+			
+			"Passagem adquirida" => StatusPassagem.PassagemAdquirida,
+			"Passagem cancelada" => StatusPassagem.PassagemCancelada,
+			"Check-in realizado" => StatusPassagem.CheckInRealizado,
+			"Embarque realizado" => StatusPassagem.EmbarqueRealizado,
+			"NO SHOW" => StatusPassagem.NoShow,
+			_ => throw new ArgumentException($"Status desconhecido: {status}")
+		};
+	}
+	private string GetEnumValue(StatusPassagem status)
+	{
+		var enumType = typeof(StatusPassagem);
+		var enumName = Enum.GetName(enumType, status);
+		var memberInfo = enumType.GetMember(enumName)[0];
+		var enumMemberAttribute = memberInfo.GetCustomAttributes(typeof(EnumMemberAttribute), false).FirstOrDefault() as EnumMemberAttribute;
+		Console.WriteLine(status);
+		return enumMemberAttribute?.Value ?? status.ToString();
 	}
 
 	partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

@@ -17,7 +17,11 @@ public partial class Passagem
 
     public int? IdVoo2 { get; set; }
 
-    public virtual ICollection<Bilhete> Bilhetes { get; set; } = new List<Bilhete>();
+		public double? ValorPassagem { get; set; }
+
+		public int CompanhiaAereaCod { get; set; }
+
+		public virtual ICollection<Bilhete> Bilhetes { get; set; } = new List<Bilhete>();
 
     public virtual Voo Voo1 { get; set; } = null!;
 
