@@ -181,7 +181,7 @@ namespace FlyNow.Controllers
 			return Ok(resultado);
 		}
 
-		[HttpPost]
+		[HttpPost("SaveVoo")]
 		public IActionResult SaveVoo(Voo voo)
 		{
 			try
